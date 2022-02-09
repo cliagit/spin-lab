@@ -1,0 +1,38 @@
+### Discendente GINIBUS con sonda al platino PT100 e al germanio GR-200A-250
+
+Multimetro Keithley 2000 o 2700
+Cavo etichettato "germanio"
+
+Collegamenti sonda al platino PT100 (sense 4 wires)
+Terminali del cavo	Multimetro
+	Blu	 -> Lo input
+	Bianco	 -> Hi input
+	Rosso	 -> Hi sense
+	Verde	 -> Lo sense
+	
+
+Collegamenti sonda al germanio GR-200A-250 (sense 4 wires)
+Terminali del cavo	Multimetro
+	Blu	 -> Hi sense
+	Bianco	 -> Hi input
+	Rosso	 -> Lo sense
+	Verde	 -> Lo input
+	
+	
+### Discendente con sonda al silicio DT-400/470 (sonda al platino non presente)
+
+Multimetro Keithley 2000 o 2700
+Alimentatore di corrente Lake Shore 10uA 
+Cavo etichettato ""
+
+Collegamenti sonda la silicio DT-400/470
+Terminali del cavo	Multimetro
+	B	-> Hi input
+	BV	-> Lo input
+
+Terminali del cavo	Alimentatore
+	R0	-> 	+	
+	A	->	-
+
+
+

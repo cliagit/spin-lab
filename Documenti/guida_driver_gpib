@@ -1,0 +1,34 @@
+# Guida alla configurazione dell'interfaccia GIPB-USB-HS di NI
+# Aggiornare il kernel
+apt update
+apt upgrade
+# Installare gli strumenti necessari per compilare il driver
+apt install build-essential dkms linux-headers-5.10.0-11-amd64
+
+# Assegnare gli utenti o l'utente al gruppo plugdev
+usermod -a -G plugdev spin
+
+# Scaricare il driver https://linux-gpib.sourceforge.io/
+# Compilare i moduli del kernel
+cd linux-gpib-x.x.x/linux-gpib-kernel-x.x.x
+make && make install
+
+# Compilare la parte user
+cd linux-gpib-x.x.x/linux-gpib-user-x.x.x
+./configure --sysconfdir=/etc --libdir=/usr/lib
+make && make install
+
+# Modificare in 98-gpib-generic.rules i permessi per il gruppo plugdev invece di gpib
+nano -w /etc/udev/rules.d/98-gpib-generic.rules
+
+# Modificare /etc/gpib.conf come mostrato
+nano -w /etc/gpib.conf
+
+	board_type = "ni_usb_b"
+	name = "gpib"
+	
+# Abilitare la libreria per Python
+apt install python3-pip
+cd linux-gpib-x.x.x/linux-gpib-user-x.x.x/language/python
+python3 ./setup.py install
+
