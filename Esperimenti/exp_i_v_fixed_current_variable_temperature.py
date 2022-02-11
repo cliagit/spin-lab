@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 '''
- I-V characteristic. Keithely Source meter as fixed current generator and Nano Voltmeter as voltage reader on channel 1
+ I-V characteristic. Keithely Source meter as fixed current generator and
+ Nano Voltmeter as voltage reader on channel 1
  Keithely multimeter 2000 or 2700 to measure temperature with silicon diode
 '''
 from datetime import datetime
@@ -14,10 +15,9 @@ import numpy as np
 import Gpib
 from lib import DT400TempSensor as sensor
 
-"""
-Gestione uscita dal programma
-"""
+
 def signal_handler(sig, frame):
+    """ Gestione uscita dal programma con Ctrl+C """
     print('\n...graceful exit')
     sys.exit(0)
 
@@ -36,6 +36,9 @@ SOURCE_I = conf['SOURCE_I']
 
 # Collegamenti del campione a 4 fili
 IS_4_WIRES = conf['IS_4_WIRES']
+
+# Intervallo di acquisizione
+DELAY = conf['DELAY']
 
 # Inizializzazione del sensore di temperatura al silicio
 dt400 = sensor.DT400TempSensor()
@@ -99,35 +102,46 @@ R = []
 # Array of temperature measures
 T = []
 
-# Measurement loop
-while(True)
-    # Read Voltage with NanoVolt
-    nanovolt.write(':READ?')
-    volt = float(nanovolt.read())
-    R.append(volt/SOURCE_I)
-    T.append(dt400.voltage_to_temp(volt))
-    sleep(cinf['DELAY'])
+fig, [ax, ax1] = plt.subplots(2,1)
+line, = ax.plot([], [], lw=2)
+line.set_data(T, R)
 
+
+# Measurement loop
+while True:
+    volt = 0.0
+    temp = 0.0
+
+    for i in range(1,20):
+        # Read Voltage with NanoVolt
+        nanovolt.write(':READ?')
+        volt += float(nanovolt.read())
+        # Read temperature
+        multimeter.write(':READ?')
+        temp += dt400.voltage_to_temp(float(multimeter.read()))
+        sleep(DELAY)
+
+    # Compute resistance
+    R.append(volt/(20*SOURCE_I))
+    # Read temperature
+    T.append(temp/20)
 
 # Turn off source meter output
 sm.write(':OUTP OFF')
 
 # Grafici
-if maxVIndex > NUM - 2:
-    title=f'{SAMPLE_NAME} I=[{START_I:.2e},{END_I:.2e}] \n DELAY {DELAY} samples {NUM}'
-else:
-    title=f'{SAMPLE_NAME} I=[{START_I:.2e},{END_I:.2e}] Vmax={maxV:.2e} at I={I[maxVIndex]:.2e}\n DELAY {DELAY} samples {NUM}'
-if IS_4_WIRES:
-    title += " Wires 4"
-
-fig, [ax, ax1, ax2] = plt.subplots(3,1)
-#fig, [ax, ax1] = plt.subplots(2,1)
+#if maxVIndex > NUM - 2:
+#    title=f'{SAMPLE_NAME} I=[{START_I:.2e},{END_I:.2e}] \n DELAY {DELAY} samples {NUM}'
+#else:
+#    title=f'{SAMPLE_NAME} I=[{START_I:.2e},{END_I:.2e}] Vmax={maxV:.2e} at I={I[maxVIndex]:.2e}\n'
+# + 'DELAY {DELAY} samples {NUM}'
+#if IS_4_WIRES:
+#    title += " Wires 4"
+"""
+fig, [ax, ax1] = plt.subplots(2,1)
 ax.plot(V, I)
 
 ax1.plot(I,V)
-
-if maxVIndex < NUM - 2:
-    ax1.plot(I[maxVIndex], V[maxVIndex], marker="o")
 
 ax2.plot(I,V/I)
 
@@ -159,3 +173,4 @@ if answer.upper() in ["Y", "YES"]:
     np.savez_compressed(title.replace(" ", "_") + "-" + date_time, V=V, I=I)
     # Salvataggio grafico
     fig.savefig(title.replace(" ", "_") + "-" + date_time + ".png")
+"""

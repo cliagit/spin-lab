@@ -1,2 +1,0 @@
-/home/spin/driver_gpib/linux-gpib-4.3.4/linux-gpib-kernel-4.3.4/drivers/gpib/ines/ines_init.o /home/spin/driver_gpib/linux-gpib-4.3.4/linux-gpib-kernel-4.3.4/drivers/gpib/ines/ines_cs.o /home/spin/driver_gpib/linux-gpib-4.3.4/linux-gpib-kernel-4.3.4/drivers/gpib/ines/interrupt.o /home/spin/driver_gpib/linux-gpib-4.3.4/linux-gpib-kernel-4.3.4/drivers/gpib/ines/ines_util.o /home/spin/driver_gpib/linux-gpib-4.3.4/linux-gpib-kernel-4.3.4/drivers/gpib/ines/ines_read.o /home/spin/driver_gpib/linux-gpib-4.3.4/linux-gpib-kernel-4.3.4/drivers/gpib/ines/ines_write.o
-

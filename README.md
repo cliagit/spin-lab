@@ -1,2 +1,2 @@
 # spin-lab
-# Suite di programmi in python per la caratteristica elettrica I-V dei materiali
+# Suite di programmi in Python3 per l'analisi della caratteristica elettrica I-V dei materiali
