@@ -1,7 +1,7 @@
-
 #!/usr/bin/env python3
+
 ''' 
-PT100 diode temperature sensor  
+PT100 temperature sensor  
 4 wires resistance measurement with Keithley 2700 or 2000
 '''
 
@@ -9,7 +9,7 @@ import Gpib
 from time import sleep
 import signal
 import sys
-import PT100TempSensor as sensor
+from lib import PT100TempSensor as sensor
 
 def signal_handler(sig, frame):
     print('...graceful exit')

@@ -9,7 +9,7 @@ import Gpib
 from time import sleep
 import signal
 import sys
-import DT400TempSensor as sensor
+from lib import DT400TempSensor as sensor
 
 def signal_handler(sig, frame):
     print('\n...graceful exit')

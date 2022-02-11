@@ -9,7 +9,7 @@ import Gpib
 from time import sleep
 import signal
 import sys
-import GR200ATempSensor as sensor
+from lib import GR200ATempSensor as sensor
 
 def signal_handler(sig, frame):
     print('\n...graceful exit')

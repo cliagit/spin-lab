@@ -2,8 +2,8 @@ import sys
 import numpy as np
 from matplotlib import pyplot as plt
 if len(sys.argv) == 0:
-	sys.exit(2)
-	
+    sys.exit(2)
+
 # Caricamento del file in input
 VIData = np.load(sys.argv[1])
 V = VIData['V']
@@ -34,4 +34,4 @@ plt.show()
 
 answer = input("Save figure? [y/N]")
 if answer.upper() in ["Y", "YES"]:
-	fig.savefig(title.replace(" ", "_") + ".png")
+    fig.savefig(title.replace(" ", "_") + ".png")
