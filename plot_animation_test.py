@@ -9,8 +9,29 @@ Please feel free to use and modify this, but keep the above information. Thanks!
 """
 
 import numpy as np
+from time import sleep
+import signal
+import sys
 from matplotlib import pyplot as plt
 from matplotlib import animation
+import threading
+
+
+def thread_function():
+    k=0
+    global x
+    global y
+    try:
+        while True:
+           x = np.linspace(0, 2, 1000)
+           y = np.sin(2 * np.pi * (x - 0.01 * k))
+           k += 1
+           sleep(0.2)
+    finally:
+        sys.exit(0)
+
+thr = threading.Thread(target=thread_function)
+thr.start()
 
 # First set up the figure, the axis, and the plot element we want to animate
 fig = plt.figure()
@@ -24,14 +45,14 @@ def init():
 
 # animation function.  This is called sequentially
 def animate(i):
-    x = np.linspace(0, 2, 1000)
-    y = np.sin(2 * np.pi * (x - 0.01 * i))
+    # x = np.linspace(0, 2, 1000)
+    # y = np.sin(2 * np.pi * (x - 0.01 * i))
     line.set_data(x, y)
     return line,
 
 # call the animator.  blit=True means only re-draw the parts that have changed.
 anim = animation.FuncAnimation(fig, animate, init_func=init,
-                               frames=200, interval=20, blit=True)
+                               frames=200, interval=500, blit=True)
 
 # save the animation as an mp4.  This requires ffmpeg or mencoder to be
 # installed.  The extra_args ensure that the x264 codec is used, so that
@@ -41,3 +62,11 @@ anim = animation.FuncAnimation(fig, animate, init_func=init,
 # anim.save('basic_animation.mp4', fps=30, extra_args=['-vcodec', 'libx264'])
 
 plt.show()
+
+
+def signal_handler(sig, frame):
+    """ Gestione uscita dal programma con Ctrl+C """
+    print('\n...graceful exit')
+    sys.exit(0)
+    
+signal.signal(signal.SIGINT, signal_handler)

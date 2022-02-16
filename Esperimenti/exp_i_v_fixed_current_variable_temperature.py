@@ -16,13 +16,6 @@ import Gpib
 from lib import DT400TempSensor as sensor
 
 
-def signal_handler(sig, frame):
-    """ Gestione uscita dal programma con Ctrl+C """
-    print('\n...graceful exit')
-    sys.exit(0)
-
-signal.signal(signal.SIGINT, signal_handler)
-
 # Load configuration file
 config = configparser.ConfigParser()
 config.read('exp_i_v_fixed_current_variable_temperature.ini')
@@ -111,7 +104,7 @@ line.set_data(T, R)
 while True:
     volt = 0.0
     temp = 0.0
-
+    # Media su 20 misure
     for i in range(1,20):
         # Read Voltage with NanoVolt
         nanovolt.write(':READ?')
@@ -128,6 +121,13 @@ while True:
 
 # Turn off source meter output
 sm.write(':OUTP OFF')
+
+def signal_handler(sig, frame):
+    """ Gestione uscita dal programma con Ctrl+C """
+    print('\n...graceful exit')
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
 
 # Grafici
 #if maxVIndex > NUM - 2:
