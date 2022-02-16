@@ -32,13 +32,13 @@ conf = config['DEFAULT']
 SAMPLE_NAME = conf['SAMPLE_NAME']
 
 # Current fixed source
-SOURCE_I = conf['SOURCE_I']
+SOURCE_I = float(conf['SOURCE_I'])
 
 # Collegamenti del campione a 4 fili
 IS_4_WIRES = conf['IS_4_WIRES']
 
 # Intervallo di acquisizione
-DELAY = conf['DELAY']
+DELAY = float(conf['DELAY'])
 
 # Inizializzazione del sensore di temperatura al silicio
 dt400 = sensor.DT400TempSensor()

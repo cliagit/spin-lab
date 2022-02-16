@@ -17,6 +17,8 @@
 .profile
 .python_history
 .ssh/
+.vbox*
+.vim*
 Scaricati/
 Immagini/
 Musica/

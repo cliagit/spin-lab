@@ -1,0 +1,2 @@
+/home/spin/driver_gpib/linux-gpib-4.3.4/linux-gpib-kernel-4.3.4/drivers/gpib/agilent_82350b/agilent_82350b_init.o /home/spin/driver_gpib/linux-gpib-4.3.4/linux-gpib-kernel-4.3.4/drivers/gpib/agilent_82350b/agilent_82350b_read.o /home/spin/driver_gpib/linux-gpib-4.3.4/linux-gpib-kernel-4.3.4/drivers/gpib/agilent_82350b/agilent_82350b_write.o /home/spin/driver_gpib/linux-gpib-4.3.4/linux-gpib-kernel-4.3.4/drivers/gpib/agilent_82350b/agilent_82350b_interrupt.o
+
