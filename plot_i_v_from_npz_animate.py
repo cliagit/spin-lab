@@ -18,8 +18,6 @@ title=f'\nI=[{np.min(I):3.4f},{np.max(I):3.4f}] Vmax={maxV:3.4f} at I={I[maxVInd
 
 # fig, [ax, ax1, ax2] = plt.subplots(3,1)
 fig, ax = plt.subplots()
-
-
 ax.grid()
 
 # initialization function: plot the background of each frame

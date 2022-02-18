@@ -7,14 +7,18 @@
 '''
 from datetime import datetime
 from time import sleep
+import threading
 import configparser
 import signal
 import sys
+import os
 from matplotlib import pyplot as plt
+from matplotlib import animation
 import numpy as np
 import Gpib
 from lib import DT400TempSensor as sensor
 
+plt.style.use('dark_background')
 
 # Load configuration file
 config = configparser.ConfigParser()
@@ -33,13 +37,14 @@ IS_4_WIRES = conf['IS_4_WIRES']
 # Intervallo di acquisizione
 DELAY = float(conf['DELAY'])
 
+title = f"{SAMPLE_NAME} fixed current {conf['SOURCE_I']}A" 
+
 # Inizializzazione del sensore di temperatura al silicio
 dt400 = sensor.DT400TempSensor()
 
-
 ### Configurazione del multimetro Keithley 2700
 # Port GPIB 0, GPIB Intrument address 16
-multimeter=Gpib.Gpib(0,16)
+multimeter=Gpib.Gpib(0,16, 20)
 # Reset GPIB
 multimeter.write("*RST")
 # Identify request
@@ -90,81 +95,105 @@ sm.write(":SENS:FUNC 'VOLT'")
 # Turn on source meter output
 sm.write(":OUTP ON")
 
-# Array of resistence measures
-R = []
-# Array of temperature measures
-T = []
+### Measurement thread loop ###
+exit_event = threading.Event()
 
-fig, [ax, ax1] = plt.subplots(2,1)
-line, = ax.plot([], [], lw=2)
-line.set_data(T, R)
+def measure_thread_function():
+    n = 10
+    # Array of resistence values
+    global R
+    R = []
+    # Array of temperature measures
+    global T
+    T = []
+    # Array of datetime
+    global DT
+    DT = []
+    # Array of voltage measures
+    global V
+    V= []
+    print("\nStart measurement loop\n")
+    # Measurement loop
+    while True:
+        voltSum = 0.0
+        tempSum = 0.0
+        # Media su n misure
+        for i in range(n):
+            # print(i)
+            # Read Voltage with NanoVolt
+            nanovolt.write(':READ?')
+            voltSum += float(nanovolt.read())
+            sleep(DELAY)
+            # Read temperature
+            multimeter.write(':READ?')
+            tempSum += dt400.voltage_to_temp(float(multimeter.read()))
+            sleep(DELAY)
+        temp = tempSum/n
+        volt = voltSum/n
+        res = volt/SOURCE_I
+        print(f'T:{temp:.2f}K V:{volt:.3f}V R:{res:.3f} Ohm', end="\r")
+        # Update voltage array
+        V.append(volt)
+        # Update resistance array
+        R.append(res)
+        # Update temperature array
+        T.append(temp)
+        # Update datetime array
+        DT.append(datetime.now())
+        if exit_event.is_set():
+            print("\nStop Measuring\n")
+            break
+ 
+#         
+thr = threading.Thread(target=measure_thread_function)
+thr.start()
 
-
-# Measurement loop
-while True:
-    volt = 0.0
-    temp = 0.0
-    # Media su 20 misure
-    for i in range(1,20):
-        # Read Voltage with NanoVolt
-        nanovolt.write(':READ?')
-        volt += float(nanovolt.read())
-        # Read temperature
-        multimeter.write(':READ?')
-        temp += dt400.voltage_to_temp(float(multimeter.read()))
-        sleep(DELAY)
-
-    # Compute resistance
-    R.append(volt/(20*SOURCE_I))
-    # Read temperature
-    T.append(temp/20)
-
-# Turn off source meter output
-sm.write(':OUTP OFF')
-
-def signal_handler(sig, frame):
-    """ Gestione uscita dal programma con Ctrl+C """
-    print('\n...graceful exit')
-    sys.exit(0)
-
-signal.signal(signal.SIGINT, signal_handler)
-
-# Grafici
-#if maxVIndex > NUM - 2:
-#    title=f'{SAMPLE_NAME} I=[{START_I:.2e},{END_I:.2e}] \n DELAY {DELAY} samples {NUM}'
-#else:
-#    title=f'{SAMPLE_NAME} I=[{START_I:.2e},{END_I:.2e}] Vmax={maxV:.2e} at I={I[maxVIndex]:.2e}\n'
-# + 'DELAY {DELAY} samples {NUM}'
-#if IS_4_WIRES:
-#    title += " Wires 4"
-"""
-fig, [ax, ax1] = plt.subplots(2,1)
-ax.plot(V, I)
-
-ax1.plot(I,V)
-
-ax2.plot(I,V/I)
-
-# ax3.plot(I, grad1)
-# print(np.average(grad1))
-
-##Scala Logaritmica
-#ax.set(ylabel='current (A)', xlabel='voltage (V)', title=title, yscale='log', xscale='log')
-#ax1.set(xlabel='current (A)', ylabel='voltage (V)', yscale='log', xscale='log')
-#ax2.set(xlabel='current (A)', ylabel='R (Ohm)', xscale='log')
-
-# Scala Lineare
-ax.set(ylabel='current (A)', xlabel='voltage (V)', title=title)
-ax1.set(xlabel='current (A)', ylabel='voltage (V)')
-ax2.set(xlabel='current (A)', ylabel='R (Ohm)')
+### Plotting ###
+fig, [ax, ax1, ax2] = plt.subplots(3,1)
+ax.set(ylabel='Resistance [Ohm]', xlabel='Temperature [K]', title=title) # , yscale='log', xscale='log')
+ax1.set(ylabel='Voltage [V]', xlabel='Time') # , yscale='log', xscale='log')
+ax2.set(ylabel='Temperature [K]', xlabel='Time') # , yscale='log', xscale='log')
 
 ax.grid()
 ax1.grid()
 ax2.grid()
-# ax3.grid()
+
+# animation function.  This is called sequentially
+def animate(i):
+    # print(i, T, R) # , T[i], R[i])
+    ax.plot(T[:i], R[:i], 'o-', color='orange')
+    ax1.plot(DT[:i], V[:i], 'o-', color='orange')
+    ax2.plot(DT[:i], T[:i], 'o-', color='orange')
+    
+def on_close(event):
+    # Turn off source meter output
+    sm.write(':OUTP OFF')
+    # print('\n...graceful exit')
+    exit_event.set()
+    thr.join()
+    date_time = datetime.now().strftime("%Y%m%d%H%M%S")
+    answer = input("Save data? [y/N]")
+    if answer.upper() in ["Y", "YES"]:
+        path = title.replace(" ", "_")
+        try: 
+            os.mkdir(path) 
+        except OSError as error: 
+            print(error)  
+        # Salvataggio dati
+        np.savez_compressed(path + "/" + path + "-" + date_time, datetime=DT, temperature=T, voltage=V, resistance=R, current_source=SOURCE_I)
+        # Salvataggio grafico
+        fig.savefig(path + "/" + path + "-" + date_time + ".png")
+    sys.exit(0)
+
+anim = animation.FuncAnimation(plt.gcf(), animate, interval=500, blit=False)
+
+# Gestione dell'evento della chiusura della finestra
+fig.canvas.mpl_connect('close_event', on_close)
 
 plt.show()
 
+"""
+np.stack((VIData['resistance'], VIData['temperature']), axis=-1)
 date_time = datetime.now().strftime("%Y%m%d%H%M%S")
 
 answer = input("Save figure? [y/N]")
