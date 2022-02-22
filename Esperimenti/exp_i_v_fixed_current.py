@@ -14,6 +14,7 @@ import sys
 import os
 from matplotlib import pyplot as plt
 from matplotlib import animation
+import pandas as pd
 import numpy as np
 import Gpib
 from lib import DT400TempSensor as sensor
@@ -22,7 +23,7 @@ plt.style.use('dark_background')
 
 # Load configuration file
 config = configparser.ConfigParser()
-config.read('exp_i_v_fixed_current_variable_temperature.ini')
+config.read('exp_i_v_fixed_current.ini')
 conf = config['DEFAULT']
 
 # Nome del campione in esame
@@ -30,9 +31,6 @@ SAMPLE_NAME = conf['SAMPLE_NAME']
 
 # Current fixed source
 SOURCE_I = float(conf['SOURCE_I'])
-
-# Collegamenti del campione a 4 fili
-IS_4_WIRES = conf['IS_4_WIRES']
 
 # Intervallo di acquisizione
 DELAY = float(conf['DELAY'])
@@ -176,11 +174,22 @@ def on_close(event):
     if answer.upper() in ["Y", "YES"]:
         path = title.replace(" ", "_")
         try: 
-            os.mkdir(path) 
+            if not os.path.exists(path):
+                os.mkdir(path)
+                file = open(path + "/README", "a") 
+                file.write(conf['DESCRIPTION']) 
+                file.write(f"\nNome del campione: {conf['SAMPLE_NAME']}")
+                file.write(f"\nValore della corrente sorgente: {conf['SOURCE_I']}")
+                file.close()  
         except OSError as error: 
             print(error)  
-        # Salvataggio dati
+        # Salvataggio dati formato numpy
         np.savez_compressed(path + "/" + path + "-" + date_time, datetime=DT, temperature=T, voltage=V, resistance=R, current_source=SOURCE_I)
+        
+        # Salvataggio dati formato csv
+        data = pd.DataFrame(np.stack((T,R,V), axis=-1), columns=['Temperature', 'Resistance', 'Voltage'])
+        data.to_csv(path + "/" + path + "-" + date_time + ".csv", index=False)
+        
         # Salvataggio grafico
         fig.savefig(path + "/" + path + "-" + date_time + ".png")
     sys.exit(0)
@@ -191,15 +200,3 @@ anim = animation.FuncAnimation(plt.gcf(), animate, interval=500, blit=False)
 fig.canvas.mpl_connect('close_event', on_close)
 
 plt.show()
-
-"""
-np.stack((VIData['resistance'], VIData['temperature']), axis=-1)
-date_time = datetime.now().strftime("%Y%m%d%H%M%S")
-
-answer = input("Save figure? [y/N]")
-if answer.upper() in ["Y", "YES"]:
-    # Salvataggio dati
-    np.savez_compressed(title.replace(" ", "_") + "-" + date_time, V=V, I=I)
-    # Salvataggio grafico
-    fig.savefig(title.replace(" ", "_") + "-" + date_time + ".png")
-"""
