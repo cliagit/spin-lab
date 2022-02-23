@@ -40,7 +40,7 @@ ins.write(":SENS:FUNC 'VOLT'")
 ''' Set measure function, range '''
 # Voltage measure range.
 ins.write(f':SENS:VOLT:RANG {limiti}')
-# Current reading only.
+# Voltage reading only.
 ins.write(":FORM:ELEM VOLT")
 # Turn on output
 ins.write(":OUTP ON")
