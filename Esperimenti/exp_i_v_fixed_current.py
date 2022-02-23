@@ -222,14 +222,28 @@ ax.grid()
 ax1.grid()
 ax2.grid()
 
+# Lista delle annotazioni
+ann_list = []
+
 def animate(i):
     """ animation function.  This is called sequentially """
-    #if i < len(T):
-    # print(i, T[i], R[i])
-    plt.figtext(0,0.2, "pippo", c="white", fontsize='x-large')
+   # print(i, T[i], R[i])
     ax.plot(T[:i], R[:i], 'o-', color='orange')
     ax1.plot(DT[:i], V[:i], 'o-', color='red')
     ax2.plot(DT[:i], T[:i], 'o-', color='yellow')
+    if len(T) > 0:
+        # Rimozione delle annotazioni precedenti
+        for i, a in enumerate(ann_list):
+            a.remove()
+        ann_list[:] = []
+        # Annotazione ultimo valore misurato
+        an = ax.annotate(f'{R[-1]:.2e}', xy=(1.05, 0.9),  xycoords='axes fraction', color="orange")
+        an1 = ax1.annotate(f'{V[-1]:.2e}', xy=(1.05, 0.9),  xycoords='axes fraction', color="r")
+        an2 = ax2.annotate(f'{T[-1]:.2e}', xy=(1.05, 0.9),  xycoords='axes fraction', color="y")
+        ann_list.append(an)
+        ann_list.append(an1)
+        ann_list.append(an2)
+        
 
 
 def on_close(event):
