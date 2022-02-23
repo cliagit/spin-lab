@@ -29,7 +29,7 @@ ax2.set(xlabel='current (A)', ylabel='R (Ohm)', xscale='log')
 ax.grid()
 ax1.grid()
 ax2.grid()
-
+plt.figtext(0.8,0.2, "pippo", c="black", fontsize='x-large')
 plt.show()
 
 answer = input("Save figure? [y/N]")
