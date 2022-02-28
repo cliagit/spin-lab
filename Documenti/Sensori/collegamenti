@@ -19,11 +19,11 @@ Terminali del cavo	Multimetro
 	Verde	 -> Lo input
 	
 	
-### Discendente con sonda al silicio DT-400/470 (sonda al platino non presente)
+### Discendente -A- con sonda al silicio DT-400/470 (sonda al platino non presente)
 
 Multimetro Keithley 2000 o 2700
 Alimentatore di corrente Lake Shore 10uA 
-Cavo etichettato ""
+Cavo etichettato "TEMP Diodo Si"
 
 Collegamenti sonda la silicio DT-400/470
 Terminali del cavo	Multimetro
