@@ -20,6 +20,7 @@
 .ssh/
 .vbox*
 .vim*
+.imagej
 Scaricati/
 Immagini/
 Musica/

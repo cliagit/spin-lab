@@ -58,7 +58,7 @@ try:
     # Identify request
     multimeter.write("*IDN?")
     # Read answer
-    logging.info('Found Multimeter {multimeter.read().decode("utf-8")}')
+    logging.info('Found Multimeter %s', multimeter.read().decode("utf-8"))
     # Select source function, mode Voltage reading only.
     multimeter.write(":SENS:FUNC 'VOLT'")
     # CHANNEL 1
@@ -167,6 +167,11 @@ def measure_thread_function():
     logging.info("Start measurement loop")
     # Measurement loop
     while True:
+        # Thread exits
+        if exit_event.is_set():
+            logging.info("End of measurement loop")
+            break
+
         error = False
         volt_sum = 0.0
         temp_sum = 0.0
@@ -220,10 +225,10 @@ def measure_thread_function():
             T.append(temp)
             # Update datetime array
             DT.append(datetime.now())
-        # Thread exits
-        if exit_event.is_set():
-            logging.info("End of measurement loop")
-            break
+#        # Thread exits
+#        if exit_event.is_set():
+#            logging.info("End of measurement loop")
+#            break
 
 # Start Measurement thread loop
 thr = threading.Thread(target=measure_thread_function)
