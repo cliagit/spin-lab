@@ -45,7 +45,7 @@ SOURCE_I_MAX = float(conf['SOURCE_I_MAX'])
 # Current numeber of samples
 SOURCE_I_SAMPLES = float(conf['SOURCE_I_SAMPLES'])
 # Current array of num sample from start to end equally spaced
-I = np.linspace(float(SOURCE_I_MIN), float(SOURCE_I_MAX), int(SOURCE_I_SAMPLES))
+SOURCE_I = np.linspace(float(SOURCE_I_MIN), float(SOURCE_I_MAX), int(SOURCE_I_SAMPLES))
 
 # Intervallo di acquisizione
 DELAY = float(conf['DELAY'])
@@ -169,7 +169,10 @@ def measure_thread_function():
     DT = []
     # Array of voltage measures
     global V
-    V= []
+    V = []
+    # Array of current values
+    global I
+    I = []
     logging.info("Start the measurement loop")
     # Measurement loop
     while True:
@@ -184,7 +187,7 @@ If you answer No, close the plot window to end the experiment',\
         if not answer:
             break
         # Ciclo della corrente
-        for i in I:
+        for i in SOURCE_I:
             # Thread exits, interruzione del ciclo della corrente 
             if exit_event.is_set():
                 break
@@ -235,6 +238,8 @@ If you answer No, close the plot window to end the experiment',\
                 print(f'T:{temp:.2f}°K V:{volt:.4e} V I:{i:.4e} A R:{res:.4e} 𝛀                          ',
                 end="\r")
                 logging.info(f'T: {temp:.2f} °K V: {volt:.4e} V I:{i:.4e} A R: {res:.4e} 𝛀 ')
+                # Update current array
+                I.append(i)
                 # Update voltage array
                 V.append(volt)
                 # Update resistance array
@@ -337,7 +342,7 @@ duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
         # Salvataggio dati formato csv
         csv_path = path_file + ".csv"
         logging.info("Save data in CSV format %s", csv_path)
-        data = pd.DataFrame(np.stack((T, R, V, I[:len(T)]), axis=-1),
+        data = pd.DataFrame(np.stack((T, R, V, I), axis=-1),
                columns=['Temperature', 'Resistance', 'Voltage', 'Current Source'])
         data.to_csv(csv_path, index=False)
 
