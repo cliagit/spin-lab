@@ -141,7 +141,7 @@ try:
     # Select source range.
     sm.write(":SOUR:CURR:RANG:AUTO ON")
     # Source output.
-    # sm.write(f":SOUR:CURR {conf['SOURCE_I']}")
+    sm.write(f":SOUR:CURR 0.0")
     # Compliance.voltage limit
     sm.write(f':SOUR:CURR:COMP {conf["LIM_VOLT"]}')
     # Turn on output
@@ -170,20 +170,27 @@ def measure_thread_function():
     # Array of voltage measures
     global V
     V= []
-    logging.info("Start measurement loop")
+    logging.info("Start the measurement loop")
     # Measurement loop
     while True:
-        # Thread exits
+        # Thread exits, interruzione del ciclo di misura
         if exit_event.is_set():
-            logging.info("End of measurement loop")
+            logging.info("End of the measurement loop")
+            break
+        # Segnalazione impostazione della corrente
+        answer = eg.ynbox('Start new measurement loop at the current temperature? \
+If you answer No, close the plot window to end the experiment',\
+'New current loop', ('Yes, go on', 'No'))
+        if not answer:
             break
         # Ciclo della corrente
         for i in I:
-            # Thread exits
+            # Thread exits, interruzione del ciclo della corrente 
             if exit_event.is_set():
                 break
             # Impostazione della corrente.
             sm.write(f":SOUR:CURR {i:6.5f}")
+            logging.info("Measurement at current %s", i)
             error = False
             volt_sum = 0.0
             temp_sum = 0.0
@@ -225,9 +232,9 @@ def measure_thread_function():
             #                         end="\r")
             #                print("\nSource meter reading error!\n")
 
-                print(f'T:{temp:.2f}°K V:{volt:.4e} V R:{res:.4e} 𝛀                          ',
+                print(f'T:{temp:.2f}°K V:{volt:.4e} V I:{i:.4e} A R:{res:.4e} 𝛀                          ',
                 end="\r")
-                logging.info(f'T: {temp:.2f} °K V: {volt:.4e} V R: {res:.4e} 𝛀 ')
+                logging.info(f'T: {temp:.2f} °K V: {volt:.4e} V I:{i:.4e} A R: {res:.4e} 𝛀 ')
                 # Update voltage array
                 V.append(volt)
                 # Update resistance array
@@ -236,10 +243,6 @@ def measure_thread_function():
                 T.append(temp)
                 # Update datetime array
                 DT.append(datetime.now())
-#        # Thread exits
-#        if exit_event.is_set():
-#            logging.info("End of measurement loop")
-#            break
 
 # Start Measurement thread loop
 thr = threading.Thread(target=measure_thread_function)
@@ -288,7 +291,7 @@ def on_close(event):
     thr.join()
     date_time = datetime.now().strftime("%Y%m%d%H%M%S")
     answer = eg.ynbox('Save data?', 'Closing the experiment', ('Yes', 'No'))
-    if answer:
+    if answer and len(T) > 0:
         path = title.replace(" ", "_")
         path_file = path + "/" + path + "-" + date_time
         try:
@@ -300,6 +303,15 @@ def on_close(event):
                     file.write(conf['DESCRIPTION'])
                     file.write(f"\nNome del campione: {conf['SAMPLE_NAME']}")
                     file.write(f"\nCorrente sorgente da {conf['SOURCE_I_MIN']} a {conf['SOURCE_I_MAX']}")
+                    file.write(f'\n### Experiment {date_time} ###')
+                    file.write(f'\nDate {DT[0].strftime("%Y-%m-%d")} start at \
+{DT[0].strftime("%H:%M:%S")} end at {DT[-1].strftime("%H:%M:%S")} \
+duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
+                    file.write(f'\nTemperature range from {T[0]:.2f}°K to {T[-1]:.2f}°K')
+                    file.write('\nResistance:')
+                    file.write(f'\n\t average {np.average(R):.4e} 𝛀')
+                    file.write(f'\n\t minimum {np.min(R):.4e} 𝛀 at {T[np.argmin(R)]:.2f}°K')
+                    file.write(f'\n\t maximum {np.max(R):.4e} 𝛀 at {T[np.argmax(R)]:.2f}°K')
             else:
                 # Update the README file descriptor with last experiment results
                 logging.info("Update the README description file")
@@ -325,15 +337,18 @@ duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
         # Salvataggio dati formato csv
         csv_path = path_file + ".csv"
         logging.info("Save data in CSV format %s", csv_path)
-        data = pd.DataFrame(np.stack((T,R,V), axis=-1),
-               columns=['Temperature', 'Resistance', 'Voltage'])
+        data = pd.DataFrame(np.stack((T, R, V, I[:len(T)]), axis=-1),
+               columns=['Temperature', 'Resistance', 'Voltage', 'Current Source'])
         data.to_csv(csv_path, index=False)
 
         # Salvataggio grafico
         fig_file = path_file + ".png"
         logging.info("Save plot as image %s", fig_file)
         fig.savefig(fig_file)
-
+    else:
+        logging.info("Data not saved")
+        if len(T) <= 0:
+            logging.warning("Data empty")
     try:
         # Turn off source meter output
         sm.write(':OUTP OFF')
