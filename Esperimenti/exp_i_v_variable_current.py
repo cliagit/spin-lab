@@ -50,7 +50,7 @@ SOURCE_I = np.linspace(float(SOURCE_I_MIN), float(SOURCE_I_MAX), int(SOURCE_I_SA
 # Intervallo di acquisizione
 DELAY = float(conf['DELAY'])
 
-title = f"{SAMPLE_NAME} variable current {conf['SOURCE_I_MIN']} to {conf['SOURCE_I_MAX']}A"
+title = f"{SAMPLE_NAME} current from {conf['SOURCE_I_MIN']} to {conf['SOURCE_I_MAX']}A"
 logging.info('### Start experiment: %s ###',title)
 # Inizializzazione del sensore di temperatura al silicio
 dt400 = sensor.DT400TempSensor()
@@ -256,7 +256,7 @@ thr.start()
 ### Plotting ###
 fig, [ax0, ax1, ax2] = plt.subplots(3,1, figsize=(16, 12))
 ax0.set(ylabel='Resistance [Ohm]', xlabel='Temperature [°K]', title=title)
-ax1.set(ylabel='Voltage [V]', xlabel='Time') # , yscale='log', xscale='log')
+ax1.set(ylabel='Voltage [V]', xlabel='Current [A]' , yscale='log', xscale='log')
 ax2.set(ylabel='Temperature [°K]', xlabel='Time') # , yscale='log', xscale='log')
 
 ax0.grid()
@@ -270,7 +270,7 @@ def animate(i):
     """ animation function.  This is called sequentially """
    # print(i, T[i], R[i])
     ax0.plot(T[:i], R[:i], '.-', color='orange')
-    ax1.plot(DT[:i], V[:i], '.-', color='red')
+    ax1.plot(I[:i], V[:i], '.-', color='red')
     ax2.plot(DT[:i], T[:i], '.-', color='yellow')
     if len(T) > 0:
         # Rimozione delle annotazioni precedenti
@@ -297,18 +297,22 @@ def on_close(event):
     date_time = datetime.now().strftime("%Y%m%d%H%M%S")
     answer = eg.ynbox('Save data?', 'Closing the experiment', ('Yes', 'No'))
     if answer and len(T) > 0:
-        path = title.replace(" ", "_")
-        path_file = path + "/" + path + "-" + date_time
+        path = SAMPLE_NAME + "/" + title.replace(" ", "_")
+        path_file = path + "/" + title.replace(" ", "_") + "-" + date_time
         try:
+            # Creazione, se non esistente, della cartella base col nome del campione 
+            if not os.path.exists(SAMPLE_NAME):
+                os.mkdir(SAMPLE_NAME)
+            # Creazione, se non esistente, della cartella dell'esperimento
             if not os.path.exists(path):
                 os.mkdir(path)
                 # Create and save README file descriptor
                 logging.info("Create the README description file")
                 with open(path + "/README", "a", encoding='utf-8') as file:
                     file.write(conf['DESCRIPTION'])
-                    file.write(f"\nNome del campione: {conf['SAMPLE_NAME']}")
+                    file.write(f"\nNome del campione: {SAMPLE_NAME}")
                     file.write(f"\nCorrente sorgente da {conf['SOURCE_I_MIN']} a {conf['SOURCE_I_MAX']}")
-                    file.write(f'\n### Experiment {date_time} ###')
+                    file.write(f'\n\n### Experiment {date_time} ###')
                     file.write(f'\nDate {DT[0].strftime("%Y-%m-%d")} start at \
 {DT[0].strftime("%H:%M:%S")} end at {DT[-1].strftime("%H:%M:%S")} \
 duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
@@ -321,7 +325,7 @@ duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
                 # Update the README file descriptor with last experiment results
                 logging.info("Update the README description file")
                 with open(path + "/README", "a", encoding='utf-8') as file:
-                    file.write(f'\n### Experiment {date_time} ###')
+                    file.write(f'\n\n### Experiment {date_time} ###')
                     file.write(f'\nDate {DT[0].strftime("%Y-%m-%d")} start at \
 {DT[0].strftime("%H:%M:%S")} end at {DT[-1].strftime("%H:%M:%S")} \
 duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')

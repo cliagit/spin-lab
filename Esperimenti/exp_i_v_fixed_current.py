@@ -44,7 +44,7 @@ SOURCE_I = float(conf['SOURCE_I'])
 # Intervallo di acquisizione
 DELAY = float(conf['DELAY'])
 
-title = f"{SAMPLE_NAME} fixed current {conf['SOURCE_I']}A"
+title = f"{SAMPLE_NAME} current {conf['SOURCE_I']}A"
 logging.info('### Start experiment: %s ###',title)
 # Inizializzazione del sensore di temperatura al silicio
 dt400 = sensor.DT400TempSensor()
@@ -278,9 +278,13 @@ def on_close(event):
     date_time = datetime.now().strftime("%Y%m%d%H%M%S")
     answer = eg.ynbox('Save data?', 'Closing the experiment', ('Yes', 'No'))
     if answer:
-        path = title.replace(" ", "_")
-        path_file = path + "/" + path + "-" + date_time
+        path = SAMPLE_NAME + "/" + title.replace(" ", "_")
+        path_file = path + "/" + title.replace(" ", "_") + "-" + date_time
         try:
+            # Creazione, se non esistente, della cartella base col nome del campione 
+            if not os.path.exists(SAMPLE_NAME):
+                os.mkdir(SAMPLE_NAME)
+            # Creazione, se non esistente, della cartella dell'esperimento
             if not os.path.exists(path):
                 os.mkdir(path)
                 # Create and save README file descriptor
@@ -289,11 +293,20 @@ def on_close(event):
                     file.write(conf['DESCRIPTION'])
                     file.write(f"\nNome del campione: {conf['SAMPLE_NAME']}")
                     file.write(f"\nValore della corrente sorgente: {conf['SOURCE_I']}")
+                    file.write(f'\n\n### Experiment {date_time} ###')
+                    file.write(f'\nDate {DT[0].strftime("%Y-%m-%d")} start at \
+{DT[0].strftime("%H:%M:%S")} end at {DT[-1].strftime("%H:%M:%S")} \
+duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
+                    file.write(f'\nTemperature range from {T[0]:.2f}°K to {T[-1]:.2f}°K')
+                    file.write('\nResistance:')
+                    file.write(f'\n\t average {np.average(R):.4e} 𝛀')
+                    file.write(f'\n\t minimum {np.min(R):.4e} 𝛀 at {T[np.argmin(R)]:.2f}°K')
+                    file.write(f'\n\t maximum {np.max(R):.4e} 𝛀 at {T[np.argmax(R)]:.2f}°K')
             else:
                 # Update the README file descriptor with last experiment results
                 logging.info("Update the README description file")
                 with open(path + "/README", "a", encoding='utf-8') as file:
-                    file.write(f'\n### Experiment {date_time} ###')
+                    file.write(f'\n\n### Experiment {date_time} ###')
                     file.write(f'\nDate {DT[0].strftime("%Y-%m-%d")} start at \
 {DT[0].strftime("%H:%M:%S")} end at {DT[-1].strftime("%H:%M:%S")} \
 duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
