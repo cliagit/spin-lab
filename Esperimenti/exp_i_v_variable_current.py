@@ -152,6 +152,7 @@ except gpib.GpibError as e:
     sys.exit(-1)
 
 # Instantiate threading event handler
+# Evento uscita dal ciclo di misura
 exit_event = threading.Event()
 
 def measure_thread_function():
@@ -180,16 +181,22 @@ def measure_thread_function():
         if exit_event.is_set():
             logging.info("End of the measurement loop")
             break
-        # Segnalazione impostazione della corrente
-        answer = eg.ynbox('Start new measurement loop at the current temperature? \
+        answer = 'temperature'
+        while 'temperature' in answer:
+            # Read temperature
+            multimeter.write(':READ?')
+            tmp= dt400.voltage_to_temp(float(multimeter.read()))
+            # Dialogo per l'avvio del ciclo di corrente
+            answer = eg.buttonbox(f'Start new measurement loop at the current temperature: {tmp:.2f}? \
 If you answer No, close the plot window to end the experiment',\
-'New current loop', ('Yes, go on', 'No'))
-        if not answer:
+'New current loop', ('Yes, go on', 'Show me the temperature, again' ,'No, I have done'))
+        if not answer == 'Yes, go on':
             break
         # Ciclo della corrente
         for i in SOURCE_I:
             # Thread exits, interruzione del ciclo della corrente 
             if exit_event.is_set():
+                print("Uscita ciclo di corrente")
                 break
             # Impostazione della corrente.
             sm.write(f":SOUR:CURR {i:6.5f}")
@@ -238,25 +245,29 @@ If you answer No, close the plot window to end the experiment',\
                 print(f'T:{temp:.2f}°K V:{volt:.4e} V I:{i:.4e} A R:{res:.4e} 𝛀                          ',
                 end="\r")
                 logging.info(f'T: {temp:.2f} °K V: {volt:.4e} V I:{i:.4e} A R: {res:.4e} 𝛀 ')
-                # Update current array
-                I.append(i)
-                # Update voltage array
-                V.append(volt)
-                # Update resistance array
-                R.append(res)
-                # Update temperature array
-                T.append(temp)
-                # Update datetime array
-                DT.append(datetime.now())
+                if volt >= float(conf["LIM_VOLT"]):
+                     logging.warning("Voltage compliance")
+                else:
+                    # Update current array
+                    I.append(i)
+                    # Update voltage array
+                    V.append(volt)
+                    # Update resistance array
+                    R.append(res)
+                    # Update temperature array
+                    T.append(temp)
+                    # Update datetime array
+                    DT.append(datetime.now())
 
-# Start Measurement thread loop
-thr = threading.Thread(target=measure_thread_function)
-thr.start()
+
+# Configure and Start Measurement thread loop
+thr_measure = threading.Thread(target=measure_thread_function)
+thr_measure.start()
 
 ### Plotting ###
 fig, [ax0, ax1, ax2] = plt.subplots(3,1, figsize=(16, 12))
-ax0.set(ylabel='Resistance [Ohm]', xlabel='Temperature [°K]', title=title)
-ax1.set(ylabel='Voltage [V]', xlabel='Current [A]' , yscale='log', xscale='log')
+ax0.set(ylabel='Resistance [Ohm]', xlabel='Time', title=title)
+ax1.set(ylabel='Voltage [V]', xlabel='Time')# , yscale='log', xscale='log')
 ax2.set(ylabel='Temperature [°K]', xlabel='Time') # , yscale='log', xscale='log')
 
 ax0.grid()
@@ -266,11 +277,11 @@ ax2.grid()
 # Lista delle annotazioni
 ann_list = []
 
-def animate(i):
+def update_plot(i):
     """ animation function.  This is called sequentially """
    # print(i, T[i], R[i])
-    ax0.plot(T[:i], R[:i], '.-', color='orange')
-    ax1.plot(I[:i], V[:i], '.-', color='red')
+    ax0.plot(DT[:i], R[:i], '.-', color='orange')
+    ax1.plot(DT[:i], V[:i], '.-', color='red')
     ax2.plot(DT[:i], T[:i], '.-', color='yellow')
     if len(T) > 0:
         # Rimozione delle annotazioni precedenti
@@ -291,9 +302,9 @@ def animate(i):
 
 def on_close(event):
     """ On close plotting window event handler """
-    # Trigger thread exit event
+    # Trigger measurement thread exit event
     exit_event.set()
-    thr.join()
+    thr_measure.join()
     date_time = datetime.now().strftime("%Y%m%d%H%M%S")
     answer = eg.ynbox('Save data?', 'Closing the experiment', ('Yes', 'No'))
     if answer and len(T) > 0:
@@ -366,7 +377,7 @@ duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
         sys.exit(-1)
     sys.exit(0)
 
-anim = animation.FuncAnimation(plt.gcf(), animate, interval=500, blit=False)
+anim = animation.FuncAnimation(plt.gcf(), update_plot, interval=500, blit=False)
 
 # Impostazione dell'evento della chiusura della finestra
 fig.canvas.mpl_connect('close_event', on_close)
