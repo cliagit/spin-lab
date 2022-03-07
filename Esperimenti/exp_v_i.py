@@ -46,6 +46,9 @@ SOURCE_I_MAX = float(conf['SOURCE_I_MAX'])
 SOURCE_I_SAMPLES = float(conf['SOURCE_I_SAMPLES'])
 # Current array of num sample from start to end equally spaced
 SOURCE_I = np.linspace(float(SOURCE_I_MIN), float(SOURCE_I_MAX), int(SOURCE_I_SAMPLES))
+# Append flipped current array of num sample from end to start
+if conf['SOURCE_FLIPPED']:
+    SOURCE_I = np.concatenate((SOURCE_I, np.flip(SOURCE_I)))
 
 # Intervallo di acquisizione
 DELAY = float(conf['DELAY'])
@@ -189,7 +192,7 @@ def measure_thread_function():
             # Dialogo per l'avvio del ciclo di corrente
             answer = eg.buttonbox(f'Start new measurement loop at the current temperature: {tmp:.2f}? \
 If you answer No, close the plot window to end the experiment',\
-'New current loop', ('Yes, go on', 'Show me the temperature, again' ,'No, I have done'))
+'Measurement loop', ('Yes, go on', 'Show me the temperature again' ,'No, I have done'))
         if not answer == 'Yes, go on':
             break
         # Ciclo della corrente
@@ -280,9 +283,9 @@ ann_list = []
 def update_plot(i):
     """ animation function.  This is called sequentially """
    # print(i, T[i], R[i])
-    ax0.plot(DT[:i], R[:i], '.-', color='orange')
-    ax1.plot(DT[:i], V[:i], '.-', color='red')
-    ax2.plot(DT[:i], T[:i], '.-', color='yellow')
+    ax0.plot(DT[:i], R[:i], '.', color='orange')
+    ax1.plot(DT[:i], V[:i], '.', color='red')
+    ax2.plot(DT[:i], T[:i], '.', color='yellow')
     if len(T) > 0:
         # Rimozione delle annotazioni precedenti
         for _k, ann_item in enumerate(ann_list):
