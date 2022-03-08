@@ -37,24 +37,36 @@ conf = config['DEFAULT']
 
 # Nome del campione in esame
 SAMPLE_NAME = conf['SAMPLE_NAME']
+# Dimensioni del campione
+AREA = conf.getfloat('AREA')
+LENGTH = conf.getfloat('LENGTH')
 
-# Current min source
-SOURCE_I_MIN = float(conf['SOURCE_I_MIN'])
-# Current max source
-SOURCE_I_MAX = float(conf['SOURCE_I_MAX'])
-# Current numeber of samples
-SOURCE_I_SAMPLES = float(conf['SOURCE_I_SAMPLES'])
-# Current array of num sample from start to end equally spaced
-SOURCE_I = np.linspace(float(SOURCE_I_MIN), float(SOURCE_I_MAX), int(SOURCE_I_SAMPLES))
+# Select fixed or variable source
+if conf.getboolean('SOURCE_FIXED'):
+    # Current fixed source
+    SOURCE_I = [conf.getfloat('SOURCE_I_FIXED')]
+    title = f"{SAMPLE_NAME} at fixed current {conf['SOURCE_I_FIXED']}A"
+else:
+    # Current min source
+    SOURCE_I_MIN = conf.getfloat('SOURCE_I_MIN')
+    # Current max source
+    SOURCE_I_MAX = conf.getfloat('SOURCE_I_MAX')
+    # Current numeber of samples
+    SOURCE_I_SAMPLES = conf.getint('SOURCE_I_SAMPLES')
+    # Current array of num sample from start to end equally spaced
+    SOURCE_I = np.linspace(SOURCE_I_MIN, SOURCE_I_MAX, SOURCE_I_SAMPLES)
+    title = f"{SAMPLE_NAME} current from {conf['SOURCE_I_MIN']} to {conf['SOURCE_I_MAX']}A"
+
 # Append flipped current array of num sample from end to start
-if conf['SOURCE_FLIPPED']:
+if conf.getboolean('SOURCE_FLIPPED'):
     SOURCE_I = np.concatenate((SOURCE_I, np.flip(SOURCE_I)))
+    title += ' flipped'
+    logging.info('Source is flipped')
+
+logging.info('### Start experiment: %s ###', title)
 
 # Intervallo di acquisizione
-DELAY = float(conf['DELAY'])
-
-title = f"{SAMPLE_NAME} current from {conf['SOURCE_I_MIN']} to {conf['SOURCE_I_MAX']}A"
-logging.info('### Start experiment: %s ###',title)
+DELAY = conf.getfloat('DELAY')
 # Inizializzazione del sensore di temperatura al silicio
 dt400 = sensor.DT400TempSensor()
 
@@ -161,7 +173,7 @@ exit_event = threading.Event()
 def measure_thread_function():
     """ Measurement thread """
     # Numero di campioni sul quale fare la media
-    num_samples = 10
+    num_samples = 5
     # Array of resistence values
     global R
     R = []
@@ -177,6 +189,16 @@ def measure_thread_function():
     # Array of current values
     global I
     I = []
+    # Array of resistivity values
+    global RHO
+    RHO = []
+    # Array of electric field values
+    global E
+    E = []
+    # Array of current density values
+    global J
+    J = []
+
     logging.info("Start the measurement loop")
     # Measurement loop
     while True:
@@ -186,9 +208,14 @@ def measure_thread_function():
             break
         answer = 'temperature'
         while 'temperature' in answer:
-            # Read temperature
-            multimeter.write(':READ?')
-            tmp= dt400.voltage_to_temp(float(multimeter.read()))
+            try:
+                # Read temperature
+                multimeter.write(':READ?')
+                tmp= dt400.voltage_to_temp(float(multimeter.read()))
+            except gpib.GpibError as e:
+                print(f"Reading error, check the instruments: {e}")
+                pass
+
             # Dialogo per l'avvio del ciclo di corrente
             answer = eg.buttonbox(f'Start new measurement loop at the current temperature: {tmp:.2f}? \
 If you answer No, close the plot window to end the experiment',\
@@ -233,6 +260,9 @@ If you answer No, close the plot window to end the experiment',\
                 temp = temp_sum/num_samples
                 volt = volt_sum/num_samples
                 res = volt/i
+                e_field = volt*LENGTH
+                c_density = i/AREA
+                rho = res*(AREA/LENGTH)
             #            try:
             #                # Lettura del voltaggio misurato al Source Meter 2400
             #                sm.write(':READ?')
@@ -245,9 +275,11 @@ If you answer No, close the plot window to end the experiment',\
             #                         end="\r")
             #                print("\nSource meter reading error!\n")
 
-                print(f'T:{temp:.2f}°K V:{volt:.4e} V I:{i:.4e} A R:{res:.4e} 𝛀                          ',
+                print(f'T:{temp:.2f}°K V:{volt:.4e}V I:{i:.4e}A R:{res:.4e}𝛀 \
+E:{e_field:.4e}Vcm J:{c_density:.4e}A/cm2 𝛒:{rho:.4e}𝛀 cm',
                 end="\r")
-                logging.info(f'T: {temp:.2f} °K V: {volt:.4e} V I:{i:.4e} A R: {res:.4e} 𝛀 ')
+                logging.info(f'T:{temp:.2f}°K V:{volt:.4e}V I:{i:.4e}A R:{res:.4e}𝛀 \
+E:{e_field:.4e}Vcm J:{c_density:.4e}A/cm2 𝛒:{rho:.4e}𝛀cm')
                 if volt >= float(conf["LIM_VOLT"]):
                      logging.warning("Voltage compliance")
                 else:
@@ -261,6 +293,13 @@ If you answer No, close the plot window to end the experiment',\
                     T.append(temp)
                     # Update datetime array
                     DT.append(datetime.now())
+                    # Derivazione degli altri parametri
+                    # Campo elettrico
+                    E.append(e_field)
+                    # Densità di corrente
+                    J.append(c_density)
+                    # Resistività
+                    RHO.append(rho)
 
 
 # Configure and Start Measurement thread loop
@@ -324,17 +363,23 @@ def on_close(event):
                 logging.info("Create the README description file")
                 with open(path + "/README", "a", encoding='utf-8') as file:
                     file.write(conf['DESCRIPTION'])
-                    file.write(f"\nNome del campione: {SAMPLE_NAME}")
-                    file.write(f"\nCorrente sorgente da {conf['SOURCE_I_MIN']} a {conf['SOURCE_I_MAX']}")
+                    file.write(f"\nName of the sample: {SAMPLE_NAME}")
+                    file.write(f"\nArea: {conf['AREA']}cm2")
+                    file.write(f"\nLength: {conf['LENGTH']}cm")
+                    file.write(f"\nCurrent source from {conf['SOURCE_I_MIN']} to {conf['SOURCE_I_MAX']}")
                     file.write(f'\n\n### Experiment {date_time} ###')
                     file.write(f'\nDate {DT[0].strftime("%Y-%m-%d")} start at \
 {DT[0].strftime("%H:%M:%S")} end at {DT[-1].strftime("%H:%M:%S")} \
 duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
                     file.write(f'\nTemperature range from {T[0]:.2f}°K to {T[-1]:.2f}°K')
-                    file.write('\nResistance:')
-                    file.write(f'\n\t average {np.average(R):.4e} 𝛀')
-                    file.write(f'\n\t minimum {np.min(R):.4e} 𝛀 at {T[np.argmin(R)]:.2f}°K')
-                    file.write(f'\n\t maximum {np.max(R):.4e} 𝛀 at {T[np.argmax(R)]:.2f}°K')
+                    file.write('\nResistivity:')
+                    file.write(f'\n\t average {np.average(R)*(AREA/LENGTH):.4e}𝛀 cm')
+                    file.write(f'\n\t minimum {np.min(R)*(AREA/LENGTH):.4e}𝛀 cm at {T[np.argmin(R)]:.2f}°K')
+                    file.write(f'\n\t maximum {np.max(R)*(AREA/LENGTH):.4e}𝛀 cm at {T[np.argmax(R)]:.2f}°K')
+                    file.write('\nVoltage:')
+                    file.write(f'\n\t average {np.average(V):.4e}V')
+                    file.write(f'\n\t minimum {np.min(V):.4e}V at {T[np.argmin(V)]:.2f}°K')
+                    file.write(f'\n\t maximum {np.max(V):.4e}V at {T[np.argmax(V)]:.2f}°K')
             else:
                 # Update the README file descriptor with last experiment results
                 logging.info("Update the README description file")
@@ -344,24 +389,30 @@ duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
 {DT[0].strftime("%H:%M:%S")} end at {DT[-1].strftime("%H:%M:%S")} \
 duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
                     file.write(f'\nTemperature range from {T[0]:.2f}°K to {T[-1]:.2f}°K')
-                    file.write('\nResistance:')
-                    file.write(f'\n\t average {np.average(R):.4e} 𝛀')
-                    file.write(f'\n\t minimum {np.min(R):.4e} 𝛀 at {T[np.argmin(R)]:.2f}°K')
-                    file.write(f'\n\t maximum {np.max(R):.4e} 𝛀 at {T[np.argmax(R)]:.2f}°K')
-
+                    file.write('\nResistivity:')
+                    file.write(f'\n\t average {np.average(R)*(AREA/LENGTH):.4e}𝛀 cm')
+                    file.write(f'\n\t minimum {np.min(R)*(AREA/LENGTH):.4e}𝛀 cm at {T[np.argmin(R)]:.2f}°K')
+                    file.write(f'\n\t maximum {np.max(R)*(AREA/LENGTH):.4e}𝛀 cm at {T[np.argmax(R)]:.2f}°K')
+                    file.write('\nVoltage:')
+                    file.write(f'\n\t average {np.average(V):.4e}V')
+                    file.write(f'\n\t minimum {np.min(V):.4e}V at {T[np.argmin(V)]:.2f}°K')
+                    file.write(f'\n\t maximum {np.max(V):.4e}V at {T[np.argmax(V)]:.2f}°K')
         except OSError as error:
             logging.error("Error handling README: %s", error)
             print(error)
+
         # Salvataggio dati formato numpy
         logging.info("Save data in numpy format %s", path_file)
         np.savez_compressed(path_file, datetime=DT, temperature=T,
-                            voltage=V, resistance=R, current_source=I)
+                            voltage=V, resistance=R, current_source=I,
+                            electric_field=E, current_density=J,
+                            resistivity=RHO)
 
         # Salvataggio dati formato csv
         csv_path = path_file + ".csv"
         logging.info("Save data in CSV format %s", csv_path)
-        data = pd.DataFrame(np.stack((T, R, V, I), axis=-1),
-               columns=['Temperature', 'Resistance', 'Voltage', 'Current Source'])
+        data = pd.DataFrame(np.stack((T, V, R, I, E, RHO, J), axis=-1),
+               columns=['Temperature', 'Voltage', 'Resistance', 'Current Source', 'Electric Field', 'Restivity', 'Current Density'])
         data.to_csv(csv_path, index=False)
 
         # Salvataggio grafico
