@@ -173,7 +173,7 @@ exit_event = threading.Event()
 def measure_thread_function():
     """ Measurement thread """
     # Numero di campioni sul quale fare la media
-    num_samples = 5
+    num_samples = 2
     # Array of resistence values
     global R
     R = []
@@ -260,9 +260,9 @@ If you answer No, close the plot window to end the experiment',\
                 temp = temp_sum/num_samples
                 volt = volt_sum/num_samples
                 res = volt/i
-                e_field = volt*LENGTH
+                e_field = volt/LENGTH
                 c_density = i/AREA
-                rho = res*(AREA/LENGTH)
+                rho = e_field/c_density
             #            try:
             #                # Lettura del voltaggio misurato al Source Meter 2400
             #                sm.write(':READ?')
@@ -322,9 +322,9 @@ ann_list = []
 def update_plot(i):
     """ animation function.  This is called sequentially """
    # print(i, T[i], R[i])
-    ax0.plot(DT[:i], R[:i], '.', color='orange')
-    ax1.plot(DT[:i], V[:i], '.', color='red')
-    ax2.plot(DT[:i], T[:i], '.', color='yellow')
+    ax0.plot(DT[:i], R[:i], '.-', color='orange')
+    ax1.plot(DT[:i], V[:i], '.-', color='red')
+    ax2.plot(DT[:i], T[:i], '.-', color='yellow')
     if len(T) > 0:
         # Rimozione delle annotazioni precedenti
         for _k, ann_item in enumerate(ann_list):
@@ -366,16 +366,19 @@ def on_close(event):
                     file.write(f"\nName of the sample: {SAMPLE_NAME}")
                     file.write(f"\nArea: {conf['AREA']}cm2")
                     file.write(f"\nLength: {conf['LENGTH']}cm")
-                    file.write(f"\nCurrent source from {conf['SOURCE_I_MIN']} to {conf['SOURCE_I_MAX']}")
+                    if conf.getboolean('SOURCE_FLIPPED'):
+                        file.write(f"\nCurrent source start and end at {conf['SOURCE_I_MIN']} through {conf['SOURCE_I_MAX']}")
+                    else:
+                        file.write(f"\nCurrent source from {conf['SOURCE_I_MIN']} to {conf['SOURCE_I_MAX']}")
                     file.write(f'\n\n### Experiment {date_time} ###')
                     file.write(f'\nDate {DT[0].strftime("%Y-%m-%d")} start at \
 {DT[0].strftime("%H:%M:%S")} end at {DT[-1].strftime("%H:%M:%S")} \
 duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
                     file.write(f'\nTemperature range from {T[0]:.2f}°K to {T[-1]:.2f}°K')
                     file.write('\nResistivity:')
-                    file.write(f'\n\t average {np.average(R)*(AREA/LENGTH):.4e}𝛀 cm')
-                    file.write(f'\n\t minimum {np.min(R)*(AREA/LENGTH):.4e}𝛀 cm at {T[np.argmin(R)]:.2f}°K')
-                    file.write(f'\n\t maximum {np.max(R)*(AREA/LENGTH):.4e}𝛀 cm at {T[np.argmax(R)]:.2f}°K')
+                    file.write(f'\n\t average {np.average(RHO):.4e}𝛀 cm')
+                    file.write(f'\n\t minimum {np.min(RHO):.4e}𝛀 cm at {T[np.argmin(R)]:.2f}°K')
+                    file.write(f'\n\t maximum {np.max(RHO):.4e}𝛀 cm at {T[np.argmax(R)]:.2f}°K')
                     file.write('\nVoltage:')
                     file.write(f'\n\t average {np.average(V):.4e}V')
                     file.write(f'\n\t minimum {np.min(V):.4e}V at {T[np.argmin(V)]:.2f}°K')
@@ -390,9 +393,9 @@ duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
 duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
                     file.write(f'\nTemperature range from {T[0]:.2f}°K to {T[-1]:.2f}°K')
                     file.write('\nResistivity:')
-                    file.write(f'\n\t average {np.average(R)*(AREA/LENGTH):.4e}𝛀 cm')
-                    file.write(f'\n\t minimum {np.min(R)*(AREA/LENGTH):.4e}𝛀 cm at {T[np.argmin(R)]:.2f}°K')
-                    file.write(f'\n\t maximum {np.max(R)*(AREA/LENGTH):.4e}𝛀 cm at {T[np.argmax(R)]:.2f}°K')
+                    file.write(f'\n\t average {np.average(RHO):.4e}𝛀 cm')
+                    file.write(f'\n\t minimum {np.min(RHO):.4e}𝛀 cm at {T[np.argmin(R)]:.2f}°K')
+                    file.write(f'\n\t maximum {np.max(RHO):.4e}𝛀 cm at {T[np.argmax(R)]:.2f}°K')
                     file.write('\nVoltage:')
                     file.write(f'\n\t average {np.average(V):.4e}V')
                     file.write(f'\n\t minimum {np.min(V):.4e}V at {T[np.argmin(V)]:.2f}°K')
@@ -412,7 +415,7 @@ duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
         csv_path = path_file + ".csv"
         logging.info("Save data in CSV format %s", csv_path)
         data = pd.DataFrame(np.stack((T, V, R, I, E, RHO, J), axis=-1),
-               columns=['Temperature', 'Voltage', 'Resistance', 'Current Source', 'Electric Field', 'Restivity', 'Current Density'])
+               columns=['Temperature [K]', 'Voltage [V]', 'Resistance [𝛀]', 'Current Source [A]', 'Electric Field [V/cm]', 'Restivity [𝛀 cm]', 'Current Density [A/cm2]'])
         data.to_csv(csv_path, index=False)
 
         # Salvataggio grafico
