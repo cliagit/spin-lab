@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 '''
- I-V characteristic. Keithely Source meter as variable current generator and
+ I-V characteristic. Keithely Source meter as fixed or variable current generator and
  Nano Voltmeter as voltage reader on channel 1
  Keithely multimeter 2000 or 2700 to measure temperature with silicon diode
 '''
@@ -40,7 +40,7 @@ SAMPLE_NAME = conf['SAMPLE_NAME']
 # Dimensioni del campione
 AREA = conf.getfloat('AREA')
 LENGTH = conf.getfloat('LENGTH')
-
+AVG_MEASURE = conf.getint('AVG_MEASURE')
 # Select fixed or variable source
 if conf.getboolean('SOURCE_FIXED'):
     # Current fixed source
@@ -173,7 +173,7 @@ exit_event = threading.Event()
 def measure_thread_function():
     """ Measurement thread """
     # Numero di campioni sul quale fare la media
-    num_samples = 2
+    # num_samples = 2
     # Array of resistence values
     global R
     R = []
@@ -217,25 +217,25 @@ def measure_thread_function():
                 pass
 
             # Dialogo per l'avvio del ciclo di corrente
-            answer = eg.buttonbox(f'Start new measurement loop at the current temperature: {tmp:.2f}? \
-If you answer No, close the plot window to end the experiment',\
+            answer = eg.buttonbox(f'Start new measurement loop at the current temperature: \
+{tmp:.2f}? If you answer No, close the plot window to save the experiment',\
 'Measurement loop', ('Yes, go on', 'Show me the temperature again' ,'No, I have done'))
         if not answer == 'Yes, go on':
             break
         # Ciclo della corrente
         for i in SOURCE_I:
-            # Thread exits, interruzione del ciclo della corrente 
+            # Thread exits, interruzione del ciclo della corrente
             if exit_event.is_set():
                 print("Uscita ciclo di corrente")
                 break
             # Impostazione della corrente.
-            sm.write(f":SOUR:CURR {i:6.5f}")
+            sm.write(f":SOUR:CURR {i}")
             logging.info("Measurement at current %s", i)
             error = False
             volt_sum = 0.0
             temp_sum = 0.0
             # Ciclo su n misure
-            for _j in range(num_samples):
+            for _j in range(AVG_MEASURE):
                 try:
                     # Read Voltage with NanoVolt
                     nanovolt.write(':READ?')
@@ -257,8 +257,8 @@ If you answer No, close the plot window to end the experiment',\
                     print(f"Reading error, check the instruments: {e}")
                     break
             if not error:
-                temp = temp_sum/num_samples
-                volt = volt_sum/num_samples
+                temp = temp_sum/AVG_MEASURE
+                volt = volt_sum/AVG_MEASURE
                 res = volt/i
                 e_field = volt/LENGTH
                 c_density = i/AREA
@@ -271,7 +271,7 @@ If you answer No, close the plot window to end the experiment',\
             #                print(f'T:{temp:.2f}°K V:{volt:.3f} V R:{res:.3f} 𝛀
             #                        Voltage limit: {(voltSm*100)/lim:.2f}%', end="\r")
             #            except:
-            #                print(f'T:{temp:.2f}°K V:{volt:.3f} V R:{res:.3f} 𝛀                        ',
+            #                print(f'T:{temp:.2f}°K V:{volt:.3f} V R:{res:.3f} 𝛀                ',
             #                         end="\r")
             #                print("\nSource meter reading error!\n")
 
@@ -281,7 +281,7 @@ E:{e_field:.4e}Vcm J:{c_density:.4e}A/cm2 𝛒:{rho:.4e}𝛀 cm',
                 logging.info(f'T:{temp:.2f}°K V:{volt:.4e}V I:{i:.4e}A R:{res:.4e}𝛀 \
 E:{e_field:.4e}Vcm J:{c_density:.4e}A/cm2 𝛒:{rho:.4e}𝛀cm')
                 if volt >= float(conf["LIM_VOLT"]):
-                     logging.warning("Voltage compliance")
+                    logging.warning("Voltage compliance")
                 else:
                     # Update current array
                     I.append(i)
@@ -353,7 +353,7 @@ def on_close(event):
         path = SAMPLE_NAME + "/" + title.replace(" ", "_")
         path_file = path + "/" + title.replace(" ", "_") + "-" + date_time
         try:
-            # Creazione, se non esistente, della cartella base col nome del campione 
+            # Creazione, se non esistente, della cartella base col nome del campione
             if not os.path.exists(SAMPLE_NAME):
                 os.mkdir(SAMPLE_NAME)
             # Creazione, se non esistente, della cartella dell'esperimento
@@ -367,9 +367,11 @@ def on_close(event):
                     file.write(f"\nArea: {conf['AREA']}cm2")
                     file.write(f"\nLength: {conf['LENGTH']}cm")
                     if conf.getboolean('SOURCE_FLIPPED'):
-                        file.write(f"\nCurrent source start and end at {conf['SOURCE_I_MIN']} through {conf['SOURCE_I_MAX']}")
+                        file.write(f"\nCurrent source start and end at {conf['SOURCE_I_MIN']} \
+through {conf['SOURCE_I_MAX']}")
                     else:
-                        file.write(f"\nCurrent source from {conf['SOURCE_I_MIN']} to {conf['SOURCE_I_MAX']}")
+                        file.write(f"\nCurrent source from {conf['SOURCE_I_MIN']} to \
+{conf['SOURCE_I_MAX']}")
                     file.write(f'\n\n### Experiment {date_time} ###')
                     file.write(f'\nDate {DT[0].strftime("%Y-%m-%d")} start at \
 {DT[0].strftime("%H:%M:%S")} end at {DT[-1].strftime("%H:%M:%S")} \
@@ -415,7 +417,8 @@ duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
         csv_path = path_file + ".csv"
         logging.info("Save data in CSV format %s", csv_path)
         data = pd.DataFrame(np.stack((T, V, R, I, E, RHO, J), axis=-1),
-               columns=['Temperature [K]', 'Voltage [V]', 'Resistance [𝛀]', 'Current Source [A]', 'Electric Field [V/cm]', 'Restivity [𝛀 cm]', 'Current Density [A/cm2]'])
+               columns=['Temperature [K]', 'Voltage [V]', 'Resistance [𝛀]', 'Current Source [A]', \
+'Electric Field [V/cm]', 'Restivity [𝛀 cm]', 'Current Density [A/cm2]'])
         data.to_csv(csv_path, index=False)
 
         # Salvataggio grafico
