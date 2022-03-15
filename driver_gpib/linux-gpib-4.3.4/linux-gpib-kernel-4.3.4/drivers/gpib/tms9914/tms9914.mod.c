@@ -25,7 +25,7 @@ MODULE_INFO(retpoline, "Y");
 
 static const struct modversion_info ____versions[]
 __used __section("__versions") = {
-	{ 0x4e79ba4a, "module_layout" },
+	{ 0xcea15aad, "module_layout" },
 	{ 0x1ed8b599, "__x86_indirect_thunk_r8" },
 	{ 0xeae3dfd6, "__const_udelay" },
 	{ 0x8f4c2520, "push_gpib_event" },

@@ -25,12 +25,12 @@ MODULE_INFO(retpoline, "Y");
 
 static const struct modversion_info ____versions[]
 __used __section("__versions") = {
-	{ 0x4e79ba4a, "module_layout" },
+	{ 0xcea15aad, "module_layout" },
 	{ 0x6bc3fbc0, "__unregister_chrdev" },
 	{ 0xa24f23d8, "__request_module" },
-	{ 0x7c8cd159, "kmalloc_caches" },
+	{ 0xe04b26ea, "kmalloc_caches" },
 	{ 0xd6ee688f, "vmalloc" },
-	{ 0xe2727a5b, "device_destroy" },
+	{ 0x576a3eca, "device_destroy" },
 	{ 0xb1bd4737, "__register_chrdev" },
 	{ 0xeae3dfd6, "__const_udelay" },
 	{ 0xc6f46339, "init_timer_key" },
@@ -55,18 +55,18 @@ __used __section("__versions") = {
 	{ 0xe1537255, "__list_del_entry_valid" },
 	{ 0xa1c76e0a, "_cond_resched" },
 	{ 0x2ab7989d, "mutex_lock" },
-	{ 0xfa3af9f6, "device_create" },
+	{ 0xd7ef4697, "device_create" },
 	{ 0xc38c83b8, "mod_timer" },
-	{ 0x6cf519fa, "_dev_err" },
+	{ 0xe29879e3, "_dev_err" },
 	{ 0x68f31cbd, "__list_add_valid" },
 	{ 0xfe487975, "init_wait_entry" },
-	{ 0xab953684, "module_put" },
+	{ 0x3f7ca79, "module_put" },
 	{ 0xc6cbbc89, "capable" },
 	{ 0xc959d152, "__stack_chk_fail" },
 	{ 0x1000e51, "schedule" },
 	{ 0xb8b9f817, "kmalloc_order_trace" },
 	{ 0x2ea2c95c, "__x86_indirect_thunk_rax" },
-	{ 0xb5d79510, "wake_up_process" },
+	{ 0x5f135c5, "wake_up_process" },
 	{ 0xbdfb6dbb, "__fentry__" },
 	{ 0xa3670410, "kmem_cache_alloc_trace" },
 	{ 0xba8fbd64, "_raw_spin_lock" },
@@ -84,7 +84,7 @@ __used __section("__versions") = {
 	{ 0x41c03874, "__class_create" },
 	{ 0x9e7d6bd0, "__udelay" },
 	{ 0x88db9f48, "__check_object_size" },
-	{ 0xcb11dd78, "try_module_get" },
+	{ 0x7cc69609, "try_module_get" },
 };
 
 MODULE_INFO(depends, "");

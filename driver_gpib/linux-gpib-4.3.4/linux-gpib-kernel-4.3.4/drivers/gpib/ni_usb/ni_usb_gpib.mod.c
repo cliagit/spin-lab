@@ -25,14 +25,14 @@ MODULE_INFO(retpoline, "Y");
 
 static const struct modversion_info ____versions[]
 __used __section("__versions") = {
-	{ 0x4e79ba4a, "module_layout" },
+	{ 0xcea15aad, "module_layout" },
 	{ 0xcf40ddb1, "usb_deregister" },
 	{ 0xe1e3818, "gpib_unregister_driver" },
 	{ 0x9a7239f3, "gpib_register_driver" },
 	{ 0x25bcba4c, "usb_register_driver" },
 	{ 0xc6f46339, "init_timer_key" },
 	{ 0xec94f366, "usb_reset_configuration" },
-	{ 0xfb4da5d, "_dev_info" },
+	{  0xf16aa, "_dev_info" },
 	{ 0x4af4ac6d, "gpib_match_device_path" },
 	{ 0x977f511b, "__mutex_init" },
 	{ 0xf21017d9, "mutex_trylock" },
@@ -59,7 +59,7 @@ __used __section("__versions") = {
 	{ 0x409bcb62, "mutex_unlock" },
 	{ 0x5eadc959, "usb_put_dev" },
 	{ 0xa3670410, "kmem_cache_alloc_trace" },
-	{ 0x7c8cd159, "kmalloc_caches" },
+	{ 0xe04b26ea, "kmalloc_caches" },
 	{ 0xe3e1cd69, "usb_get_dev" },
 	{ 0x2ab7989d, "mutex_lock" },
 	{ 0xcf2a6966, "up" },

@@ -1,0 +1,17 @@
+Esperimento di caratterizzazione della resistività del cristallo Ca2RuO4 alimentato in corrente lungo asse C in funzione della temperatura con collegamento a 2 fili sul discendente A
+Name of the sample: CA12X2
+Area: 4.807e-2cm2
+Length: 0.2376e-1cm
+Current source from 1e-3 to 100e-3
+
+### Experiment 20220315125954 ###
+Date 2022-03-15 start at 11:58:11 end at 12:58:49 duration 1:00:38
+Temperature range from 233.08°K to 139.25°K
+Resistivity:
+	 average 5.5594e+07𝛀 cm
+	 minimum 5.4656e+05𝛀 cm at 233.08°K
+	 maximum 2.2560e+08𝛀 cm at 140.92°K
+Voltage:
+	 average 2.7479e+00V
+	 minimum 2.7016e-02V at 233.08°K
+	 maximum 1.1151e+01V at 140.92°K

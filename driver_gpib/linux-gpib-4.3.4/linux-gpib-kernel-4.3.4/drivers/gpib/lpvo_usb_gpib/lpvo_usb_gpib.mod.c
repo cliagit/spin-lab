@@ -25,9 +25,9 @@ MODULE_INFO(retpoline, "Y");
 
 static const struct modversion_info ____versions[]
 __used __section("__versions") = {
-	{ 0x4e79ba4a, "module_layout" },
+	{ 0xcea15aad, "module_layout" },
 	{ 0x27a2ca93, "param_ops_int" },
-	{ 0xbf2d1557, "noop_llseek" },
+	{ 0x461fb2a4, "noop_llseek" },
 	{ 0xcf40ddb1, "usb_deregister" },
 	{ 0x25bcba4c, "usb_register_driver" },
 	{ 0x3c3ff9fd, "sprintf" },
@@ -71,10 +71,10 @@ __used __section("__versions") = {
 	{ 0xe3e1cd69, "usb_get_dev" },
 	{ 0xd9a5ea54, "__init_waitqueue_head" },
 	{ 0xa3670410, "kmem_cache_alloc_trace" },
-	{ 0x7c8cd159, "kmalloc_caches" },
+	{ 0xe04b26ea, "kmalloc_caches" },
 	{ 0x977f511b, "__mutex_init" },
 	{ 0xe1e3818, "gpib_unregister_driver" },
-	{ 0xfb4da5d, "_dev_info" },
+	{  0xf16aa, "_dev_info" },
 	{ 0x28edca2b, "usb_deregister_dev" },
 	{ 0x37a0cba, "kfree" },
 	{ 0x5eadc959, "usb_put_dev" },
@@ -89,7 +89,7 @@ __used __section("__versions") = {
 	{ 0x8910dbc2, "usb_find_interface" },
 	{ 0x3eeb2322, "__wake_up" },
 	{ 0xc5850110, "printk" },
-	{ 0x6cf519fa, "_dev_err" },
+	{ 0xe29879e3, "_dev_err" },
 	{ 0xcf2a6966, "up" },
 	{ 0x46083b0a, "usb_free_coherent" },
 	{ 0xd35cce70, "_raw_spin_unlock_irqrestore" },

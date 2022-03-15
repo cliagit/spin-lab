@@ -25,10 +25,10 @@ MODULE_INFO(retpoline, "Y");
 
 static const struct modversion_info ____versions[]
 __used __section("__versions") = {
-	{ 0x4e79ba4a, "module_layout" },
+	{ 0xcea15aad, "module_layout" },
 	{ 0xdaddf74d, "tms9914_request_system_control" },
 	{ 0x85bd1608, "__request_region" },
-	{ 0x7c8cd159, "kmalloc_caches" },
+	{ 0xe04b26ea, "kmalloc_caches" },
 	{ 0x77358855, "iomem_resource" },
 	{ 0xbdf086a2, "tms9914_disable_eos" },
 	{ 0xc0f07e19, "tms9914_online" },

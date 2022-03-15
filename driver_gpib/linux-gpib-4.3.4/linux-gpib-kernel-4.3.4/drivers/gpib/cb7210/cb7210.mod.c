@@ -25,10 +25,10 @@ MODULE_INFO(retpoline, "Y");
 
 static const struct modversion_info ____versions[]
 __used __section("__versions") = {
-	{ 0x4e79ba4a, "module_layout" },
+	{ 0xcea15aad, "module_layout" },
 	{ 0x4a899fbf, "nec7210_serial_poll_response" },
 	{ 0x85bd1608, "__request_region" },
-	{ 0x7c8cd159, "kmalloc_caches" },
+	{ 0xe04b26ea, "kmalloc_caches" },
 	{ 0x40ccc6f5, "nec7210_command" },
 	{ 0xe5fa6ebd, "nec7210_remote_enable" },
 	{ 0xd8627e58, "nec7210_set_reg_bits" },
