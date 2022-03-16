@@ -214,7 +214,6 @@ def measure_thread_function():
                 tmp= dt400.voltage_to_temp(float(multimeter.read()))
             except gpib.GpibError as e:
                 print(f"Reading error, check the instruments: {e}")
-                pass
 
             # Dialogo per l'avvio del ciclo di corrente
             answer = eg.buttonbox(f'Start new measurement loop at the current temperature: \
@@ -367,51 +366,49 @@ def on_close(event):
             # Creazione, se non esistente, della cartella dell'esperimento
             if not os.path.exists(path):
                 os.mkdir(path)
-                # Create and save README file descriptor
-                logging.info("Create the README description file")
-                with open(path + "/README", "a", encoding='utf-8') as file:
-                    file.write(conf['DESCRIPTION'])
-                    file.write(f"\nName of the sample: {SAMPLE_NAME}")
-                    file.write(f"\nArea: {conf['AREA']}cm2")
-                    file.write(f"\nLength: {conf['LENGTH']}cm")
-                    if conf.getboolean('SOURCE_FLIPPED'):
-                        file.write(f"\nCurrent source start and end at {conf['SOURCE_I_MIN']} \
-through {conf['SOURCE_I_MAX']}")
-                    else:
-                        file.write(f"\nCurrent source from {conf['SOURCE_I_MIN']} to \
-{conf['SOURCE_I_MAX']}")
-                    file.write(f'\n\n### Experiment {date_time} ###')
-                    file.write(f'\nDate {DT[0].strftime("%Y-%m-%d")} start at \
+            # Create and save README file descriptor
+            logging.info("Save the description file")
+            with open(path_file, "a", encoding='utf-8') as file:
+                file.write(conf['DESCRIPTION'])
+                file.write(f"\nName of the sample: {SAMPLE_NAME}")
+                file.write(f"\nArea: {conf['AREA']}cm2")
+                file.write(f"\nLength: {conf['LENGTH']}cm")
+                if conf.getboolean('SOURCE_FIXED'):
+                    file.write(f"\nCurrent source fixed at {conf['SOURCE_I_FIXED']}A")
+                elif conf.getboolean('SOURCE_FLIPPED'):
+                    file.write(f"\nCurrent source starts and ends at {conf['SOURCE_I_MIN']}A\
+through {conf['SOURCE_I_MAX']}A")
+                else:
+                    file.write(f"\nCurrent source from {conf['SOURCE_I_MIN']}A to \
+{conf['SOURCE_I_MAX']}A")
+                file.write(f'\n\n### Experiment {date_time} ###')
+                file.write(f'\nDate {DT[0].strftime("%Y-%m-%d")} start at \
 {DT[0].strftime("%H:%M:%S")} end at {DT[-1].strftime("%H:%M:%S")} \
 duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
-                    file.write(f'\nTemperature range from {T[0]:.2f}°K to {T[-1]:.2f}°K')
-                    file.write('\nResistivity:')
-                    file.write(f'\n\t average {np.average(RHO):.4e}𝛀 cm')
-                    file.write(f'\n\t minimum {np.min(RHO):.4e}𝛀 cm at {T[np.argmin(R)]:.2f}°K')
-                    file.write(f'\n\t maximum {np.max(RHO):.4e}𝛀 cm at {T[np.argmax(R)]:.2f}°K')
-                    file.write('\nVoltage:')
-                    file.write(f'\n\t average {np.average(V):.4e}V')
-                    file.write(f'\n\t minimum {np.min(V):.4e}V at {T[np.argmin(V)]:.2f}°K')
-                    file.write(f'\n\t maximum {np.max(V):.4e}V at {T[np.argmax(V)]:.2f}°K')
-            else:
-                # Update the README file descriptor with last experiment results
-                logging.info("Update the README description file")
-                with open(path + "/README", "a", encoding='utf-8') as file:
-                    file.write(f'\n\n### Experiment {date_time} ###')
-                    file.write(f'\nDate {DT[0].strftime("%Y-%m-%d")} start at \
+                file.write(f'\nTemperature range from {T[0]:.2f}°K to {T[-1]:.2f}°K')
+                file.write('\nResistivity:')
+                file.write(f'\n\t average {np.average(RHO):.4e}𝛀 cm')
+                file.write(f'\n\t minimum {np.min(RHO):.4e}𝛀 cm at {T[np.argmin(R)]:.2f}°K')
+                file.write(f'\n\t maximum {np.max(RHO):.4e}𝛀 cm at {T[np.argmax(R)]:.2f}°K')
+                file.write('\nVoltage:')
+                file.write(f'\n\t average {np.average(V):.4e}V')
+                file.write(f'\n\t minimum {np.min(V):.4e}V at {T[np.argmin(V)]:.2f}°K')
+                file.write(f'\n\t maximum {np.max(V):.4e}V at {T[np.argmax(V)]:.2f}°K')
+                file.write(f'\n\n### Experiment {date_time} ###')
+                file.write(f'\nDate {DT[0].strftime("%Y-%m-%d")} start at \
 {DT[0].strftime("%H:%M:%S")} end at {DT[-1].strftime("%H:%M:%S")} \
 duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
-                    file.write(f'\nTemperature range from {T[0]:.2f}°K to {T[-1]:.2f}°K')
-                    file.write('\nResistivity:')
-                    file.write(f'\n\t average {np.average(RHO):.4e}𝛀 cm')
-                    file.write(f'\n\t minimum {np.min(RHO):.4e}𝛀 cm at {T[np.argmin(R)]:.2f}°K')
-                    file.write(f'\n\t maximum {np.max(RHO):.4e}𝛀 cm at {T[np.argmax(R)]:.2f}°K')
-                    file.write('\nVoltage:')
-                    file.write(f'\n\t average {np.average(V):.4e}V')
-                    file.write(f'\n\t minimum {np.min(V):.4e}V at {T[np.argmin(V)]:.2f}°K')
-                    file.write(f'\n\t maximum {np.max(V):.4e}V at {T[np.argmax(V)]:.2f}°K')
+                file.write(f'\nTemperature range from {T[0]:.2f}°K to {T[-1]:.2f}°K')
+                file.write('\nResistivity:')
+                file.write(f'\n\t average {np.average(RHO):.4e}𝛀 cm')
+                file.write(f'\n\t minimum {np.min(RHO):.4e}𝛀 cm at {T[np.argmin(R)]:.2f}°K')
+                file.write(f'\n\t maximum {np.max(RHO):.4e}𝛀 cm at {T[np.argmax(R)]:.2f}°K')
+                file.write('\nVoltage:')
+                file.write(f'\n\t average {np.average(V):.4e}V')
+                file.write(f'\n\t minimum {np.min(V):.4e}V at {T[np.argmin(V)]:.2f}°K')
+                file.write(f'\n\t maximum {np.max(V):.4e}V at {T[np.argmax(V)]:.2f}°K')
         except OSError as error:
-            logging.error("Error handling README: %s", error)
+            logging.error("Error handling description file: %s", error)
             print(error)
 
         # Salvataggio dati formato numpy

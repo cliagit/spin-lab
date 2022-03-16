@@ -1,18 +1,26 @@
 #!/usr/bin/env python3
 
 '''
-Plotting 3D
+Plotting experiment data
 '''
 import matplotlib.pyplot as plt
+from matplotlib import cm
 import numpy as np
-from scipy.signal import find_peaks
 import easygui as eg
 
 # Stile della finestra dei grafici
-# plt.style.use('dark_background')
+plt.style.use('dark_background')
 
-file_name = eg.fileopenbox(msg="Browse data", title=None, default='/home/spin/Esperimenti/*.npz', filetypes=["*.npz"], multiple=False)
-data=np.load(file_name)
+file_data = eg.fileopenbox(msg="Browse data", title=None, default='/home/spin/Esperimenti/*.npz',
+                           filetypes=["*.npz"], multiple=False)
+# Visualizzazione della descrizione dell'esperimento
+with open(file_data.replace('.npz',''), "r", encoding='utf-8') as file_desc:
+    text = file_desc.read()
+    print(text)
+    # eg.textbox('', 'Description', text, run=True)
+
+# Caricamento dei dati
+data=np.load(file_data)
 try:
     V=data['voltage']
     R=data['resistance']
@@ -29,50 +37,51 @@ except KeyError:
 fixedTemperature = np.max(T) - np.min(T) <= 5
 fixedCurrent = np.max(I) == np.min(I)
 
-## Grafici 3D
-mappable = plt.cm.ScalarMappable(cmap=plt.cm.turbo)
-mappable.set_array(T)
+if not fixedTemperature and not fixedCurrent:
+    ## Grafici 3D
+    mappable = plt.cm.ScalarMappable(cmap=cm.turbo)
+    mappable.set_array(T)
 
-fig3d_a = plt.figure()
-ax3d_a = plt.axes(projection='3d')
-fig3d_a.colorbar(mappable)
+    fig3d_a = plt.figure()
+    ax3d_a = plt.axes(projection='3d')
+    fig3d_a.colorbar(mappable)
 
-fig3d_b = plt.figure()
-ax3d_b = plt.axes(projection='3d')
-fig3d_b.colorbar(mappable)
+    fig3d_b = plt.figure()
+    ax3d_b = plt.axes(projection='3d')
+    fig3d_b.colorbar(mappable)
 
-fig3d_c = plt.figure()
-ax3d_c = plt.axes(projection='3d')
-fig3d_c.colorbar(mappable)
-try:
-    ax3d_a.set(title="V vs I and Temperature", xlabel='A', ylabel='V', zlabel='(°K)')
-    ax3d_a.scatter(I, V, T, cmap=mappable.cmap, norm=mappable.norm, c=mappable.get_array())
-    # Individuazione dei massimi e dei minimi
-    v_min = np.argmin(V)
-    v_max = np.argmax(V)
-    ax3d_a.text(I[v_max], V[v_max], T[v_max], f"{V[v_max]:.2e}V", color='red')
-    ax3d_a.text(I[v_min], V[v_min], T[v_min], f"{V[v_min]:.2e}V", color='orange')
+    fig3d_c = plt.figure()
+    ax3d_c = plt.axes(projection='3d')
+    fig3d_c.colorbar(mappable)
+    try:
+        ax3d_a.set(title="V vs I and Temperature", xlabel='A', ylabel='V', zlabel='(°K)')
+        ax3d_a.scatter(I, V, T, cmap=mappable.cmap, norm=mappable.norm, c=mappable.get_array())
+        # Individuazione dei massimi e dei minimi
+        v_min = np.argmin(V)
+        v_max = np.argmax(V)
+        ax3d_a.text(I[v_max], V[v_max], T[v_max], f"{V[v_max]:.2e}V", color='red')
+        ax3d_a.text(I[v_min], V[v_min], T[v_min], f"{V[v_min]:.2e}V", color='orange')
 
-    ax3d_b.set(title='E vs J and Temperature', xlabel='A/cm2', ylabel='V cm', zlabel='(°K)')
-    ax3d_b.scatter(J, E, T, cmap=mappable.cmap, norm=mappable.norm, c=mappable.get_array())
-    # Individuazione dei massimi e dei minimi
-    e_min = np.argmin(E)
-    e_max = np.argmax(E)
-    ax3d_b.text(J[e_max], E[e_max], T[e_max], f"{E[e_max]:.2e}V/cm", color='red')
-    ax3d_b.text(J[e_min], E[e_min], T[e_min], f"{E[e_min]:.2e}V/cm", color='orange')
-    ax3d_c.set(title='Rho vs J and Temperature', xlabel='A/cm2', ylabel='Ohm cm', zlabel='(°K)')
-    ax3d_c.scatter(J, RHO, T, cmap=mappable.cmap, norm=mappable.norm, c=mappable.get_array())
-    # Individuazione dei massimi e dei minimi
-    r_min = np.argmin(RHO)
-    r_max = np.argmax(RHO)
-    ax3d_c.text(J[r_max], RHO[r_max], T[r_max], f"{RHO[r_max]:.2e}Ohm/cm", color='red')
-    ax3d_c.text(J[r_min], RHO[r_min], T[r_min], f"{RHO[r_min]:.2e}Ohm/cm", color='orange')
-except NameError:
-    pass
+        ax3d_b.set(title='E vs J and Temperature', xlabel='A/cm2', ylabel='V cm', zlabel='(°K)')
+        ax3d_b.scatter(J, E, T, cmap=mappable.cmap, norm=mappable.norm, c=mappable.get_array())
+        # Individuazione dei massimi e dei minimi
+        e_min = np.argmin(E)
+        e_max = np.argmax(E)
+        ax3d_b.text(J[e_max], E[e_max], T[e_max], f"{E[e_max]:.2e}V/cm", color='red')
+        ax3d_b.text(J[e_min], E[e_min], T[e_min], f"{E[e_min]:.2e}V/cm", color='orange')
+        ax3d_c.set(title='Rho vs J and Temperature', xlabel='A/cm2', ylabel='Ohm cm', zlabel='(°K)')
+        ax3d_c.scatter(J, RHO, T, cmap=mappable.cmap, norm=mappable.norm, c=mappable.get_array())
+        # Individuazione dei massimi e dei minimi
+        r_min = np.argmin(RHO)
+        r_max = np.argmax(RHO)
+        ax3d_c.text(J[r_max], RHO[r_max], T[r_max], f"{RHO[r_max]:.2e}Ohm/cm", color='red')
+        ax3d_c.text(J[r_min], RHO[r_min], T[r_min], f"{RHO[r_min]:.2e}Ohm/cm", color='orange')
+    except NameError:
+        pass
 
 ## Grafici 2D a temperatura fissata
-fig, [ax, ax1] = plt.subplots(2,1)
 if fixedTemperature and not fixedCurrent:
+    fig, [ax, ax1] = plt.subplots(2,1)
     try:
         ax.plot(I, V, ".-")
         # Annotate Start point
@@ -84,7 +93,7 @@ if fixedTemperature and not fixedCurrent:
         # ax.plot(I[-1], V[-1], "o", color="red")
         ax.annotate("End",
             xy=(I[-1], V[-1]), xycoords='data', color="red")
-        ax.set(xlabel='A', ylabel='V', title="V-I Characteristics", yscale='log', xscale='log')
+        ax.set(xlabel='A', ylabel='V', title="V-I Characteristics") #, yscale='log', xscale='log')
         ax.grid()
 
         ax1.plot(J, RHO, ".-")
@@ -97,12 +106,14 @@ if fixedTemperature and not fixedCurrent:
         # ax1.plot(J[-1], RHO[-1], "o", color="red")
         ax1.annotate("End",
            xy=(J[-1], RHO[-1]), xycoords='data', color="red")
-        ax1.set(xlabel='A/cm2', ylabel='Ohm cm', title="Resistivity vs J", yscale='log', xscale='log')
+        ax1.set(xlabel='A/cm2', ylabel='Ohm cm', title="Resistivity vs J")
+        #, yscale='log', xscale='log')
         ax1.grid()
     except NameError:
         pass
 
 if fixedCurrent and not fixedTemperature:
+    fig, [ax, ax1] = plt.subplots(2,1)
     ax.plot(T, V, ".-")
     # Annotate Start point
     ax.annotate("Start",
@@ -124,6 +135,5 @@ if fixedCurrent and not fixedTemperature:
        xy=(T[-1], RHO[-1]), xycoords='data', color="red")
     ax1.set(xlabel='°K', ylabel='Ohm cm', title="Resistivity vs Temperature", yscale='log')
     ax1.grid()
-
 
 plt.show()
