@@ -3,7 +3,7 @@
 '''
  I-V characteristic. Keithely Source meter as fixed or variable current generator and
  Nano Voltmeter as voltage reader on channel 1
- Keithely multimeter 2000 or 2700 to measure temperature with silicon diode
+ Keithely multimeter 2000 or 2700 to measure temperature with silicon diode DT470
 '''
 from datetime import datetime
 from time import sleep
@@ -43,10 +43,12 @@ LENGTH = conf.getfloat('LENGTH')
 AVG_MEASURE = conf.getint('AVG_MEASURE')
 # Select fixed or variable source
 if conf.getboolean('SOURCE_FIXED'):
+    SOURCE_FLIPPED = False
     # Current fixed source
     SOURCE_I = [conf.getfloat('SOURCE_I_FIXED')]
     title = f"{SAMPLE_NAME} at fixed current {conf['SOURCE_I_FIXED']}A"
 else:
+    SOURCE_FLIPPED = conf.getboolean('SOURCE_FLIPPED')
     # Current min source
     SOURCE_I_MIN = conf.getfloat('SOURCE_I_MIN')
     # Current max source
@@ -58,7 +60,7 @@ else:
     title = f"{SAMPLE_NAME} current from {conf['SOURCE_I_MIN']} to {conf['SOURCE_I_MAX']}A"
 
 # Append flipped current array of num sample from end to start
-if conf.getboolean('SOURCE_FLIPPED'):
+if SOURCE_FLIPPED:
     SOURCE_I = np.concatenate((SOURCE_I, np.flip(SOURCE_I)))
     title += ' flipped'
     logging.info('Source is flipped')
@@ -223,18 +225,24 @@ def measure_thread_function():
             break
         # Ciclo della corrente
         for i in SOURCE_I:
-            # Thread exits, interruzione del ciclo della corrente
-            if exit_event.is_set():
-                print("Uscita ciclo di corrente")
-                break
-            # Impostazione della corrente.
-            sm.write(f":SOUR:CURR {i}")
-            logging.info("Measurement at current %s", i)
-            error = False
-            volt_sum = 0.0
-            temp_sum = 0.0
+            try:
+                # Thread exits, interruzione del ciclo della corrente
+                if exit_event.is_set():
+                    print("Uscita ciclo di corrente")
+                    break
+                # Impostazione della corrente.
+                sm.write(f":SOUR:CURR {i}")
+                logging.info("Measurement at current %s", i)
+                error = False
+                volt_sum = 0.0
+                temp_sum = 0.0
+            except gpib.GpibError as e:
+                logging.warning("Writing gpib error: %s", e)
+                print(f"Writing gpib error: {e}")
+                pass
             # Ciclo su n misure
             for _j in range(AVG_MEASURE):
+                # print(f"\nMisura :{_j}\n")
                 try:
                     # Read Voltage with NanoVolt
                     nanovolt.write(':READ?')
@@ -246,10 +254,10 @@ def measure_thread_function():
                     temp_measure = dt400.voltage_to_temp(float(multimeter.read()))
                     temp_sum += temp_measure
                     if abs(nvolt_measure - nvolt_measure_prev) > 1:
-                        logging.warning("Voltage reading differ > 1V: current %s \
-previous %s temperature %s", nvolt_measure, nvolt_measure_prev, temp_measure)
-                        print(f"\nVoltage reading differ > 1V, current {nvolt_measure:.4f} \
-previous {nvolt_measure_prev:.4f} temperature {temp_measure:.2f}\n")
+                        logging.warning("Voltage reading differ > 1V: current value is %sV \
+previous %sV temperature %s°K current %sA", nvolt_measure, nvolt_measure_prev, temp_measure, i)
+                        print(f"\nVoltage reading differ > 1V, current value is {nvolt_measure:.4f}V \
+previous {nvolt_measure_prev:.4f}V temperature {temp_measure:.2f}°K current {i:.4e}A\n")
                     nvolt_measure_prev = nvolt_measure
                     sleep(DELAY)
                     error = False
@@ -375,25 +383,12 @@ def on_close(event):
                 file.write(f"\nLength: {conf['LENGTH']}cm")
                 if conf.getboolean('SOURCE_FIXED'):
                     file.write(f"\nCurrent source fixed at {conf['SOURCE_I_FIXED']}A")
-                elif conf.getboolean('SOURCE_FLIPPED'):
-                    file.write(f"\nCurrent source starts and ends at {conf['SOURCE_I_MIN']}A\
+                elif SOURCE_FLIPPED:
+                    file.write(f"\nCurrent source starts and ends at {conf['SOURCE_I_MIN']}A \
 through {conf['SOURCE_I_MAX']}A")
                 else:
                     file.write(f"\nCurrent source from {conf['SOURCE_I_MIN']}A to \
 {conf['SOURCE_I_MAX']}A")
-                file.write(f'\n\n### Experiment {date_time} ###')
-                file.write(f'\nDate {DT[0].strftime("%Y-%m-%d")} start at \
-{DT[0].strftime("%H:%M:%S")} end at {DT[-1].strftime("%H:%M:%S")} \
-duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
-                file.write(f'\nTemperature range from {T[0]:.2f}°K to {T[-1]:.2f}°K')
-                file.write('\nResistivity:')
-                file.write(f'\n\t average {np.average(RHO):.4e}𝛀 cm')
-                file.write(f'\n\t minimum {np.min(RHO):.4e}𝛀 cm at {T[np.argmin(R)]:.2f}°K')
-                file.write(f'\n\t maximum {np.max(RHO):.4e}𝛀 cm at {T[np.argmax(R)]:.2f}°K')
-                file.write('\nVoltage:')
-                file.write(f'\n\t average {np.average(V):.4e}V')
-                file.write(f'\n\t minimum {np.min(V):.4e}V at {T[np.argmin(V)]:.2f}°K')
-                file.write(f'\n\t maximum {np.max(V):.4e}V at {T[np.argmax(V)]:.2f}°K')
                 file.write(f'\n\n### Experiment {date_time} ###')
                 file.write(f'\nDate {DT[0].strftime("%Y-%m-%d")} start at \
 {DT[0].strftime("%H:%M:%S")} end at {DT[-1].strftime("%H:%M:%S")} \
