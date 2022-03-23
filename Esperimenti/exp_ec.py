@@ -11,6 +11,7 @@ import threading
 import configparser
 import sys
 import os
+import shutil
 import logging
 from matplotlib import pyplot as plt
 from matplotlib import animation
@@ -64,7 +65,7 @@ if SOURCE_FLIPPED:
     SOURCE_I = np.concatenate((SOURCE_I, np.flip(SOURCE_I)))
     title += ' flipped'
     logging.info('Source is flipped')
-
+    
 logging.info('### Start experiment: %s ###', title)
 
 # Intervallo di acquisizione
@@ -434,6 +435,9 @@ duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
     except gpib.GpibError:
         logging.warning("Couldn't turn off the Source Meter")
         sys.exit(-1)
+
+    # Copia del log
+    shutil.copy(sys.argv[0].replace('.py', '.log'), path_file + ".log")
     sys.exit(0)
 
 anim = animation.FuncAnimation(plt.gcf(), update_plot, interval=500, blit=False)
