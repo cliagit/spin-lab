@@ -65,7 +65,7 @@ if SOURCE_FLIPPED:
     SOURCE_I = np.concatenate((SOURCE_I, np.flip(SOURCE_I)))
     title += ' flipped'
     logging.info('Source is flipped')
-    
+
 logging.info('### Start experiment: %s ###', title)
 
 # Intervallo di acquisizione
@@ -140,7 +140,7 @@ except gpib.GpibError as e:
 #    # Turn on source meter output
 #    sm.write(":OUTP ON")
 #except gpib.GpibError as e:
-#    logging.fatal("Source meter 2400 doesn't respond: %s", e);
+#    logging.fatal("Source meter 2400 doesn't respond: %s", e)
 #    print("Source meter doesn't respond, check it out!")
 #    sys.exit(-1)
 
@@ -256,8 +256,9 @@ def measure_thread_function():
                     if abs(nvolt_measure - nvolt_measure_prev) > 1:
                         logging.warning("Voltage reading differ > 1V: current value is %sV \
 previous %sV temperature %s°K current %sA", nvolt_measure, nvolt_measure_prev, temp_measure, i)
-                        print(f"\nVoltage reading differ > 1V, current value is {nvolt_measure:.4f}V \
-previous {nvolt_measure_prev:.4f}V temperature {temp_measure:.2f}°K current {i:.4e}A\n")
+                        print(f"\nVoltage reading differ > 1V, current value is \
+{nvolt_measure:.4f}V previous {nvolt_measure_prev:.4f}V temperature \
+{temp_measure:.2f}°K current {i:.4e}A\n")
                     nvolt_measure_prev = nvolt_measure
                     sleep(DELAY)
                     error = False

@@ -11,6 +11,7 @@ import threading
 import configparser
 import sys
 import os
+import shutil
 import logging
 from matplotlib import pyplot as plt
 from matplotlib import animation
@@ -139,7 +140,7 @@ try:
     # Turn on source meter output
     sm.write(":OUTP ON")
 except gpib.GpibError as e:
-    logging.fatal("Source meter 2400 doesn't respond: %s", e);
+    logging.fatal("Source meter 2400 doesn't respond: %s", e)
     print("Source meter doesn't respond, check it out!")
     sys.exit(-1)
 
@@ -255,7 +256,8 @@ def measure_thread_function():
                     if abs(nvolt_measure - nvolt_measure_prev) > 1:
                         logging.warning("Voltage reading differ > 1V: current value is %sV \
 previous %sV temperature %s°K current %sA", nvolt_measure, nvolt_measure_prev, temp_measure, i)
-                        print(f"\nVoltage reading differ > 1V, current value is {nvolt_measure:.4f}V \
+                        print(f"\nVoltage reading differ > 1V, \
+current value is {nvolt_measure:.4f}V \
 previous {nvolt_measure_prev:.4f}V temperature {temp_measure:.2f}°K current {i:.4e}A\n")
                     nvolt_measure_prev = nvolt_measure
                     sleep(DELAY)
@@ -433,6 +435,9 @@ duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
     except gpib.GpibError:
         logging.warning("Couldn't turn off the Source Meter")
         sys.exit(-1)
+
+    # Copia del log
+    shutil.copy(sys.argv[0].replace('.py', '.log'), path_file + ".log")
     sys.exit(0)
 
 anim = animation.FuncAnimation(plt.gcf(), update_plot, interval=500, blit=False)
