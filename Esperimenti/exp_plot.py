@@ -114,6 +114,7 @@ if fixedTemperature and not fixedCurrent:
 
 if fixedCurrent and not fixedTemperature:
     fig, [ax, ax1] = plt.subplots(2,1)
+    # Plot V vs T
     ax.plot(T, V, ".-")
     # Annotate Start point
     ax.annotate("Start",
@@ -124,7 +125,7 @@ if fixedCurrent and not fixedTemperature:
         xy=(T[-1], V[-1]), xycoords='data', color="red")
     ax.set(xlabel='°K', ylabel='V', title="Voltage vs Temperature")
     ax.grid()
-
+    # Plot RHO vs T
     ax1.plot(T, RHO, ".-")
     # Annotate Start point
     ax1.annotate("Start",
@@ -133,7 +134,7 @@ if fixedCurrent and not fixedTemperature:
     # Annotate End point
     ax1.annotate("End",
        xy=(T[-1], RHO[-1]), xycoords='data', color="red")
-    ax1.set(xlabel='°K', ylabel='Ohm cm', title="Resistivity vs Temperature", yscale='log')
+    ax1.set(xlabel='°K', ylabel='Ohm cm', title="Resistivity vs Temperature", yscale='linear')
     ax1.grid()
 
 plt.show()
