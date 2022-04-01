@@ -61,14 +61,15 @@ if not fixedTemperature and not fixedCurrent:
         v_max = np.argmax(V)
         ax3d_a.text(I[v_max], V[v_max], T[v_max], f"{V[v_max]:.2e}V", color='red')
         ax3d_a.text(I[v_min], V[v_min], T[v_min], f"{V[v_min]:.2e}V", color='orange')
-
         ax3d_b.set(title='E vs J and Temperature', xlabel='A/cm2', ylabel='V cm', zlabel='(°K)')
         ax3d_b.scatter(J, E, T, cmap=mappable.cmap, norm=mappable.norm, c=mappable.get_array())
+
         # Individuazione dei massimi e dei minimi
         e_min = np.argmin(E)
         e_max = np.argmax(E)
         ax3d_b.text(J[e_max], E[e_max], T[e_max], f"{E[e_max]:.2e}V/cm", color='red')
         ax3d_b.text(J[e_min], E[e_min], T[e_min], f"{E[e_min]:.2e}V/cm", color='orange')
+
         ax3d_c.set(title='Rho vs J and Temperature', xlabel='A/cm2', ylabel='Ohm cm', zlabel='(°K)')
         ax3d_c.scatter(J, RHO, T, cmap=mappable.cmap, norm=mappable.norm, c=mappable.get_array())
         # Individuazione dei massimi e dei minimi
@@ -112,28 +113,25 @@ if fixedTemperature and not fixedCurrent:
     except NameError:
         pass
 
-if fixedCurrent and not fixedTemperature:
+if not fixedTemperature:
     fig, [ax, ax1] = plt.subplots(2,1)
     # Plot V vs T
-    ax.plot(T, V, ".-")
+    ax.plot(T, V, ".")
     # Annotate Start point
-    ax.annotate("Start",
-        xy=(T[0], V[0]), xycoords='data', color="green")
+    # ax.annotate("Start", xy=(T[0], V[0]), xycoords='data', color="green")
 
     # Annotate End point
-    ax.annotate("End",
-        xy=(T[-1], V[-1]), xycoords='data', color="red")
+    # ax.annotate("End", xy=(T[-1], V[-1]), xycoords='data', color="red")
     ax.set(xlabel='°K', ylabel='V', title="Voltage vs Temperature")
     ax.grid()
+
     # Plot RHO vs T
-    ax1.plot(T, RHO, ".-")
+    ax1.plot(T, RHO, ".")
     # Annotate Start point
-    ax1.annotate("Start",
-        xy=(T[0], RHO[0]), xycoords='data', color="green")
+    # ax1.annotate("Start", xy=(T[0], RHO[0]), xycoords='data', color="green")
 
     # Annotate End point
-    ax1.annotate("End",
-       xy=(T[-1], RHO[-1]), xycoords='data', color="red")
+    # ax1.annotate("End", xy=(T[-1], RHO[-1]), xycoords='data', color="red")
     ax1.set(xlabel='°K', ylabel='Ohm cm', title="Resistivity vs Temperature", yscale='linear')
     ax1.grid()
 

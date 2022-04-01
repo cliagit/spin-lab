@@ -436,9 +436,9 @@ duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
     except gpib.GpibError:
         logging.warning("Couldn't turn off the Source Meter")
         sys.exit(-1)
-
-    # Copia del log
-    shutil.copy(sys.argv[0].replace('.py', '.log'), path_file + ".log")
+    if answer and len(T) > 0:
+        # Copia del log
+        shutil.copy(sys.argv[0].replace('.py', '.log'), path_file + ".log")
     sys.exit(0)
 
 anim = animation.FuncAnimation(plt.gcf(), update_plot, interval=500, blit=False)
