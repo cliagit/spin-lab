@@ -1,0 +1,6 @@
+*.py
+*.log
+*.ini
+lib
+.ipynb*
+.~*  

@@ -22,6 +22,9 @@
 .vim*
 .imagej
 .wine*
+.tex*
+.jupyter
+.lyx
 Scaricati/
 Immagini/
 Musica/

@@ -200,7 +200,6 @@ def measure_thread_function():
     # Array of current density values
     global J
     J = []
-    nvolt_measure_prev = 0.0
     logging.info("Start the measurement loop")
     # Measurement loop
     while True:
@@ -223,6 +222,7 @@ def measure_thread_function():
 'Measurement loop', ('Yes, go on', 'Show me the temperature again' ,'No, I have done'))
         if not answer == 'Yes, go on':
             break
+        nvolt_measure_prev = -1000.0
         # Ciclo della corrente
         for i in SOURCE_I:
             try:
@@ -230,6 +230,7 @@ def measure_thread_function():
                 if exit_event.is_set():
                     print("Uscita ciclo di corrente")
                     break
+
                 # Impostazione della corrente.
                 sm.write(f":SOUR:CURR {i}")
                 logging.info("Measurement at current %s", i)
@@ -253,7 +254,7 @@ def measure_thread_function():
                     multimeter.write(':READ?')
                     temp_measure = dt400.voltage_to_temp(float(multimeter.read()))
                     temp_sum += temp_measure
-                    if abs(nvolt_measure - nvolt_measure_prev) > 1:
+                    if abs(nvolt_measure - nvolt_measure_prev) > 1.0 and not nvolt_measure_prev < 0:
                         logging.warning("Voltage reading differ > 1V: current value is %sV \
 previous %sV temperature %s°K current %sA", nvolt_measure, nvolt_measure_prev, temp_measure, i)
                         print(f"\nVoltage reading differ > 1V, current value is \
