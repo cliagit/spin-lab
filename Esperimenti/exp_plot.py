@@ -9,7 +9,7 @@ import numpy as np
 import easygui as eg
 
 # Stile della finestra dei grafici
-plt.style.use('dark_background')
+# plt.style.use('dark_background')
 
 file_data = eg.fileopenbox(msg="Browse data", title=None, default='/home/spin/Esperimenti/*.npz',
                            filetypes=["*.npz"], multiple=False)
