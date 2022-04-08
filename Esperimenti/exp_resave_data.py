@@ -37,7 +37,7 @@ np.savez_compressed(file_npz, datetime=DT, temperature=T,
 
 # Salvataggio dati formato csv
 data = pd.DataFrame(np.stack((T, V, R, I, E, RHO, J), axis=-1),
-columns=['Temperature [K]', 'Voltage [V]', 'Resistance [Ohm]', 'Current Source [A]', 'Electric Field [V/cm]', 'Restivity [Ohm cm]', 'Current Density [A/cm2]'])
+columns=['Temperature [K]', 'Voltage [V]', 'Resistance [Ohm]', 'Current Source [A]', 'Electric Field [V cm]', 'Restivity [Ohm cm]', 'Current Density [A/cm2]'])
 data.to_csv(file_csv, index=False)
 
 

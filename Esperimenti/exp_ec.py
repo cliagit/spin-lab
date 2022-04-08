@@ -219,7 +219,7 @@ def measure_thread_function():
             # Dialogo per l'avvio del ciclo di corrente
             answer = eg.buttonbox(f'Start new measurement loop at the current temperature: \
 {tmp:.2f}? If you answer No, close the plot window to save the experiment',\
-'Measurement loop', ('Yes, go on', 'Show me the temperature again' ,'No, I have done'))
+'Measurement loop', ('Yes, go on', 'Show me the temperature' ,'No, I have done'))
         if not answer == 'Yes, go on':
             break
         nvolt_measure_prev = -1000.0
@@ -293,10 +293,10 @@ previous %sV temperature %s°K current %sA", nvolt_measure, nvolt_measure_prev, 
             #                print("\nSource meter reading error!\n")
 
                 print(f'T:{temp:.2f}°K V:{volt:.4e}V I:{i:.4e}A R:{res:.4e}𝛀 \
-E:{e_field:.4e}Vcm J:{c_density:.4e}A/cm2 𝛒:{rho:.4e}𝛀 cm',
+E:{e_field:.4e}V/cm J:{c_density:.4e}A/cm2 𝛒:{rho:.4e}𝛀 cm',
                 end="\r")
                 logging.info(f'T:{temp:.2f}°K V:{volt:.4e}V I:{i:.4e}A R:{res:.4e}𝛀 \
-E:{e_field:.4e}Vcm J:{c_density:.4e}A/cm2 𝛒:{rho:.4e}𝛀cm')
+E:{e_field:.4e}V/cm J:{c_density:.4e}A/cm2 𝛒:{rho:.4e}𝛀cm')
                 if volt >= float(conf["LIM_VOLT"]):
                     logging.warning("Voltage compliance")
                 else:

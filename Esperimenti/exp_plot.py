@@ -12,25 +12,37 @@ import easygui as eg
 # plt.style.use('dark_background')
 
 file_data = eg.fileopenbox(msg="Browse data", title=None, default='/home/spin/Esperimenti/*.npz',
-                           filetypes=["*.npz"], multiple=False)
-# Visualizzazione della descrizione dell'esperimento
-with open(file_data.replace('.npz',''), "r", encoding='utf-8') as file_desc:
-    text = file_desc.read()
-    print(text)
-    # eg.textbox('', 'Description', text, run=True)
+                           filetypes=["*.npz"], multiple=True)
+index = 0
+for file in file_data:
+    # Visualizzazione della descrizione dell'esperimento
+    with open(file.replace('.npz',''), "r", encoding='utf-8') as file_desc:
+        text = file_desc.read()
+        print(text)
+        # eg.textbox('', 'Description', text, run=True)
 
-# Caricamento dei dati
-data=np.load(file_data)
-try:
-    V=data['voltage']
-    R=data['resistance']
-    T=data['temperature']
-    I=data['current_source']
-    J=data['current_density']
-    E=data['electric_field']
-    RHO=data['resistivity']
-except KeyError:
-    pass
+    # Caricamento dei dati
+    data=np.load(file)
+    try:
+        if index == 0:
+            V = data['voltage']
+            R = data['resistance']
+            T = data['temperature']
+            I = data['current_source']
+            J = data['current_density']
+            E = data['electric_field']
+            RHO = data['resistivity']
+        else:
+            V = np.append(V, data['voltage'], axis=0)
+            R = np.append(R, data['resistance'], axis=0)
+            T = np.append(T, data['temperature'], axis=0)
+            I = np.append(I, data['current_source'], axis=0)
+            J = np.append(J, data['current_density'], axis=0)
+            E = np.append(E, data['electric_field'], axis=0)
+            RHO = np.append(RHO, data['resistivity'], axis=0)
+        index += 1
+    except KeyError:
+        pass
 
 # answer = eg.choicebox('Select the plot', 'Plot', ["RHO vs Temperature", "RHO vs I"])
 
