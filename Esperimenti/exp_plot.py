@@ -50,6 +50,37 @@ fixedTemperature = np.max(T) - np.min(T) <= 5
 fixedCurrent = np.max(I) == np.min(I)
 
 if not fixedTemperature and not fixedCurrent:
+    ## Grafici 2D
+    fig, [ax, ax1] = plt.subplots(2,1)
+    indexes_max = np.where(I == np.max(I))[0]
+    indexes_min = np.where(I == np.min(I))[0]
+    # print(indexes_min, indexes_max)
+    for i in range(len(indexes_min)):
+        # Plot V vs I
+        ax.plot(I[indexes_min[i]:indexes_max[i]], V[indexes_min[i]:indexes_max[i]], '.-',
+label=f'{round(np.average(T[indexes_min[i]:indexes_max[i]]))}')
+        # Plot RHO vs J
+        ax1.plot(J[indexes_min[i]:indexes_max[i]], RHO[indexes_min[i]:indexes_max[i]], '.-',
+label=f'{round(np.average(T[indexes_min[i]:indexes_max[i]]))}',)
+ 
+    ax.set(xlabel='A', ylabel='V', title="V vs I", yscale='log')
+    ax.grid()
+    ax.legend()
+
+    ax1.set(xlabel='A/cm2', ylabel='Ohm cm', title="RHO vs J", yscale='log', xscale='linear')
+    ax1.grid()
+    ax1.legend()
+
+    fig, ax2 = plt.subplots()
+    for j in range(0, indexes_min[1], 1):
+       # print(indexes_min + j, I[indexes_min + j])
+        ax2.plot(T[indexes_min + j], RHO[indexes_min + j], '.-',
+label=f'{J[indexes_min + j][0]*1000:.1f}',)
+
+    ax2.set(xlabel='°K', ylabel='Ohm cm', title="RHO vs T", yscale='log', xscale='linear')
+    ax2.grid()
+    ax2.legend()
+
     ## Grafici 3D
     mappable = plt.cm.ScalarMappable(cmap=cm.turbo)
     mappable.set_array(T)
@@ -125,7 +156,7 @@ if fixedTemperature and not fixedCurrent:
     except NameError:
         pass
 
-if not fixedTemperature:
+if not fixedTemperature and fixedCurrent:
     fig, [ax, ax1] = plt.subplots(2,1)
     # Plot V vs T
     ax.plot(T, V, ".")
