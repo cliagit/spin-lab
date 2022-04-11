@@ -89,7 +89,7 @@ try:
     multimeter.write(":FORM:ELEM READ")
 except gpib.GpibError as e:
     logging.fatal("Multimeter doesn't respond: %s", e)
-    print("Multimeter doesn't respond, check it out!", e)
+    # print("Multimeter doesn't respond, check it out!", e)
     sys.exit(-1)
 
 
@@ -110,7 +110,7 @@ try:
     nanovolt.write(":SENS:CHAN 1")
 except gpib.GpibError as e:
     logging.fatal("Nanovolt meter doesn't respond: %s" , e)
-    print("Nanovolt meter doesn't respond, check it out!")
+    # print("Nanovolt meter doesn't respond, check it out!")
     sys.exit(-1)
 
 ### Configurazione del SourceMeter Keithley 2400
@@ -141,7 +141,7 @@ except gpib.GpibError as e:
 #    sm.write(":OUTP ON")
 #except gpib.GpibError as e:
 #    logging.fatal("Source meter 2400 doesn't respond: %s", e)
-#    print("Source meter doesn't respond, check it out!")
+#    # print("Source meter doesn't respond, check it out!")
 #    sys.exit(-1)
 
 ### Configurazione del SourceMeter Keithley 6220
@@ -165,7 +165,7 @@ try:
     sm.write(":OUTP ON")
 except gpib.GpibError as e:
     logging.fatal("Source meter 6220 doesn't respond: %s", e)
-    print("Source meter 6220 doesn't respond, check it out!")
+    # print("Source meter 6220 doesn't respond, check it out!")
     sys.exit(-1)
 
 # Instantiate threading event handler
@@ -203,6 +203,14 @@ def measure_thread_function():
     logging.info("Start the measurement loop")
     # Measurement loop
     while True:
+        try:
+            # Impostazione del valore iniziale della corrente
+            sm.write(f":SOUR:CURR {SOURCE_I[0]}")
+        except gpib.GpibError as e:
+            logging.warning("Writing gpib error, check the source meter: %s", e)
+            # print(f"Writing gpib error: {e}")
+            pass
+
         # Thread exits, interruzione del ciclo di misura
         if exit_event.is_set():
             logging.info("End of the measurement loop")
@@ -214,7 +222,8 @@ def measure_thread_function():
                 multimeter.write(':READ?')
                 tmp= dt400.voltage_to_temp(float(multimeter.read()))
             except gpib.GpibError as e:
-                print(f"Reading error, check the instruments: {e}")
+                logging.warning("Reading gpib error, check the multimeter: %s", e)
+                # print(f"Reading error, check the instruments: {e}")
 
             # Dialogo per l'avvio del ciclo di corrente
             answer = eg.buttonbox(f'Start new measurement loop at the current temperature: \
@@ -228,7 +237,8 @@ def measure_thread_function():
             try:
                 # Thread exits, interruzione del ciclo della corrente
                 if exit_event.is_set():
-                    print("Uscita ciclo di corrente")
+                    logging.info("Leaving the current loop")
+                    # print("Uscita ciclo di corrente")
                     break
 
                 # Impostazione della corrente.
@@ -238,8 +248,8 @@ def measure_thread_function():
                 volt_sum = 0.0
                 temp_sum = 0.0
             except gpib.GpibError as e:
-                logging.warning("Writing gpib error: %s", e)
-                print(f"Writing gpib error: {e}")
+                logging.warning("Writing gpib error, check the source meter: %s", e)
+                # print(f"Writing gpib error: {e}")
                 pass
             # Ciclo su n misure
             for _j in range(AVG_MEASURE):
@@ -254,24 +264,24 @@ def measure_thread_function():
                     multimeter.write(':READ?')
                     temp_measure = dt400.voltage_to_temp(float(multimeter.read()))
                     temp_sum += temp_measure
-                    if abs(nvolt_measure - nvolt_measure_prev) > 1.0 and not nvolt_measure_prev < 0:
-                        logging.warning("Voltage reading differ > 1V: current value is %sV \
-previous %sV temperature %s°K current %sA", nvolt_measure, nvolt_measure_prev, temp_measure, i)
-                        print(f"\nVoltage reading differ > 1V, current value is \
-{nvolt_measure:.4f}V previous {nvolt_measure_prev:.4f}V temperature \
-{temp_measure:.2f}°K current {i:.4e}A\n")
+#                    if abs(nvolt_measure - nvolt_measure_prev) > 1.0 and not nvolt_measure_prev < 0:
+#                        logging.warning("Voltage reading differ > 1V: current value is %sV \
+#previous %sV temperature %s°K current %sA", nvolt_measure, nvolt_measure_prev, temp_measure, i)
+                        # print(f"\nVoltage reading differ > 1V, current value is \
+#{nvolt_measure:.4f}V previous {nvolt_measure_prev:.4f}V temperature \
+#{temp_measure:.2f}°K current {i:.4e}A\n")
                     nvolt_measure_prev = nvolt_measure
                     sleep(DELAY)
                     error = False
                 except ValueError:
                     error = True
                     logging.warning('Temperature out of range!')
-                    print("Temperature out of range!")
+                    # print("Temperature out of range!")
                     break
                 except gpib.GpibError as e:
                     error = True
-                    logging.warning("Reading error: %s", e)
-                    print(f"Reading error, check the instruments: {e}")
+                    logging.warning("Reading gpib error, check the instruments: %s", e)
+                    # print(f"Reading error, check the instruments: {e}")
                     break
             if not error:
                 temp = temp_sum/AVG_MEASURE
@@ -285,16 +295,16 @@ previous %sV temperature %s°K current %sA", nvolt_measure, nvolt_measure_prev, 
             #                sm.write(':READ?')
             #                voltSm = float(sm.read())
             #                lim = float(conf["LIM_VOLT"])
-            #                print(f'T:{temp:.2f}°K V:{volt:.3f} V R:{res:.3f} 𝛀
+            #                # print(f'T:{temp:.2f}°K V:{volt:.3f} V R:{res:.3f} 𝛀
             #                        Voltage limit: {(voltSm*100)/lim:.2f}%', end="\r")
             #            except:
-            #                print(f'T:{temp:.2f}°K V:{volt:.3f} V R:{res:.3f} 𝛀                ',
+            #                # print(f'T:{temp:.2f}°K V:{volt:.3f} V R:{res:.3f} 𝛀                ',
             #                         end="\r")
-            #                print("\nSource meter reading error!\n")
+            #                # print("\nSource meter reading error!\n")
 
-                print(f'T:{temp:.2f}°K V:{volt:.4e}V I:{i:.4e}A R:{res:.4e}𝛀 \
-E:{e_field:.4e}V/cm J:{c_density:.4e}A/cm2 𝛒:{rho:.4e}𝛀 cm',
-                end="\r")
+                # print(f'T:{temp:.2f}°K V:{volt:.4e}V I:{i:.4e}A R:{res:.4e}𝛀 \
+#E:{e_field:.4e}V/cm J:{c_density:.4e}A/cm2 𝛒:{rho:.4e}𝛀 cm',
+#                end="\r")
                 logging.info(f'T:{temp:.2f}°K V:{volt:.4e}V I:{i:.4e}A R:{res:.4e}𝛀 \
 E:{e_field:.4e}V/cm J:{c_density:.4e}A/cm2 𝛒:{rho:.4e}𝛀cm')
                 if volt >= float(conf["LIM_VOLT"]):
@@ -406,7 +416,7 @@ duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
                 file.write(f'\n\t maximum {np.max(V):.4e}V at {T[np.argmax(V)]:.2f}°K')
         except OSError as error:
             logging.error("Error handling description file: %s", error)
-            print(error)
+            # print(error)
 
         # Salvataggio dati formato numpy
         logging.info("Save data in numpy format %s", path_file)
@@ -440,6 +450,7 @@ duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
     if answer and len(T) > 0:
         # Copia del log
         shutil.copy(sys.argv[0].replace('.py', '.log'), path_file + ".log")
+    logging.info("Closing the experiment")
     sys.exit(0)
 
 anim = animation.FuncAnimation(plt.gcf(), update_plot, interval=500, blit=False)
