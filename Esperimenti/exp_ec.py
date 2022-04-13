@@ -41,12 +41,16 @@ SAMPLE_NAME = conf['SAMPLE_NAME']
 # Dimensioni del campione
 AREA = conf.getfloat('AREA')
 LENGTH = conf.getfloat('LENGTH')
+# Numero di valori sui quali fare la media
 AVG_MEASURE = conf.getint('AVG_MEASURE')
+# Current number of samples
+SOURCE_I_SAMPLES = conf.getint('SOURCE_I_SAMPLES')
+
 # Select fixed or variable source
 if conf.getboolean('SOURCE_FIXED'):
     SOURCE_FLIPPED = False
     # Current fixed source
-    SOURCE_I = [conf.getfloat('SOURCE_I_FIXED')]
+    SOURCE_I =  np.ones(SOURCE_I_SAMPLES) * conf.getfloat('SOURCE_I_FIXED')
     title = f"{SAMPLE_NAME} at fixed current {conf['SOURCE_I_FIXED']}A"
 else:
     SOURCE_FLIPPED = conf.getboolean('SOURCE_FLIPPED')
@@ -54,8 +58,6 @@ else:
     SOURCE_I_MIN = conf.getfloat('SOURCE_I_MIN')
     # Current max source
     SOURCE_I_MAX = conf.getfloat('SOURCE_I_MAX')
-    # Current numeber of samples
-    SOURCE_I_SAMPLES = conf.getint('SOURCE_I_SAMPLES')
     # Current array of num sample from start to end equally spaced
     SOURCE_I = np.linspace(SOURCE_I_MIN, SOURCE_I_MAX, SOURCE_I_SAMPLES)
     title = f"{SAMPLE_NAME} current from {conf['SOURCE_I_MIN']} to {conf['SOURCE_I_MAX']}A"
@@ -176,6 +178,9 @@ def measure_thread_function():
     """ Measurement thread """
     # Numero di campioni sul quale fare la media
     # num_samples = 2
+    global start_measurements
+    start_measurements = False
+
     # Array of resistence values
     global R
     R = []
@@ -209,7 +214,6 @@ def measure_thread_function():
         except gpib.GpibError as e:
             logging.warning("Writing gpib error, check the source meter: %s", e)
             # print(f"Writing gpib error: {e}")
-            pass
 
         # Thread exits, interruzione del ciclo di misura
         if exit_event.is_set():
@@ -224,14 +228,15 @@ def measure_thread_function():
             except gpib.GpibError as e:
                 logging.warning("Reading gpib error, check the multimeter: %s", e)
                 # print(f"Reading error, check the instruments: {e}")
-
+            start_measurements = False
             # Dialogo per l'avvio del ciclo di corrente
             answer = eg.buttonbox(f'Start new measurement loop at the current temperature: \
 {tmp:.2f}? If you answer No, close the plot window to save the experiment',\
 'Measurement loop', ('Yes, go on', 'Show me the temperature' ,'No, I have done'))
         if not answer == 'Yes, go on':
             break
-        nvolt_measure_prev = -1000.0
+        start_measurements = True
+        # nvolt_measure_prev = -1000.0
         # Ciclo della corrente
         for i in SOURCE_I:
             try:
@@ -250,7 +255,7 @@ def measure_thread_function():
             except gpib.GpibError as e:
                 logging.warning("Writing gpib error, check the source meter: %s", e)
                 # print(f"Writing gpib error: {e}")
-                pass
+
             # Ciclo su n misure
             for _j in range(AVG_MEASURE):
                 # print(f"\nMisura :{_j}\n")
@@ -264,13 +269,13 @@ def measure_thread_function():
                     multimeter.write(':READ?')
                     temp_measure = dt400.voltage_to_temp(float(multimeter.read()))
                     temp_sum += temp_measure
-#                    if abs(nvolt_measure - nvolt_measure_prev) > 1.0 and not nvolt_measure_prev < 0:
+#                   if abs(nvolt_measure - nvolt_measure_prev) > 1.0 and not nvolt_measure_prev < 0:
 #                        logging.warning("Voltage reading differ > 1V: current value is %sV \
 #previous %sV temperature %s°K current %sA", nvolt_measure, nvolt_measure_prev, temp_measure, i)
                         # print(f"\nVoltage reading differ > 1V, current value is \
 #{nvolt_measure:.4f}V previous {nvolt_measure_prev:.4f}V temperature \
 #{temp_measure:.2f}°K current {i:.4e}A\n")
-                    nvolt_measure_prev = nvolt_measure
+                    #nvolt_measure_prev = nvolt_measure
                     sleep(DELAY)
                     error = False
                 except ValueError:
@@ -301,12 +306,12 @@ def measure_thread_function():
             #                # print(f'T:{temp:.2f}°K V:{volt:.3f} V R:{res:.3f} 𝛀                ',
             #                         end="\r")
             #                # print("\nSource meter reading error!\n")
-
+                log_measure = f'T:{temp:.2f}°K V:{volt:.4e}V I:{i:.4e}A R:{res:.4e}𝛀 \
+E:{e_field:.4e}V/cm J:{c_density:.4e}A/cm2 𝛒:{rho:.4e}𝛀 cm'
                 # print(f'T:{temp:.2f}°K V:{volt:.4e}V I:{i:.4e}A R:{res:.4e}𝛀 \
 #E:{e_field:.4e}V/cm J:{c_density:.4e}A/cm2 𝛒:{rho:.4e}𝛀 cm',
 #                end="\r")
-                logging.info(f'T:{temp:.2f}°K V:{volt:.4e}V I:{i:.4e}A R:{res:.4e}𝛀 \
-E:{e_field:.4e}V/cm J:{c_density:.4e}A/cm2 𝛒:{rho:.4e}𝛀cm')
+                logging.info('%s', log_measure)
                 if volt >= float(conf["LIM_VOLT"]):
                     logging.warning("Voltage compliance")
                 else:
@@ -349,24 +354,33 @@ ann_list = []
 def update_plot(i):
     """ animation function.  This is called sequentially """
    # print(i, T[i], R[i])
-    ax0.plot(DT[:i], R[:i], '.-', color='orange')
-    ax1.plot(DT[:i], V[:i], '.-', color='red')
-    ax2.plot(DT[:i], T[:i], '.-', color='yellow')
-    if len(T) > 0:
-        # Rimozione delle annotazioni precedenti
-        for _k, ann_item in enumerate(ann_list):
-            ann_item.remove()
-        ann_list[:] = []
-        ## Annotazioni riportanti gli ultimi valori misurati
-        # Resistenza
-        an0 = ax0.annotate(f'{R[-1]:.3e}', xy=(1.01, 0.9),  xycoords='axes fraction', color="w")
-        # Voltaggio
-        an1 = ax1.annotate(f'{V[-1]:.3e}', xy=(1.01, 0.9),  xycoords='axes fraction', color="w")
-        # Temperatura
-        an2 = ax2.annotate(f'{T[-1]:.2e}', xy=(1.01, 0.9),  xycoords='axes fraction', color="w")
-        ann_list.append(an0)
-        ann_list.append(an1)
-        ann_list.append(an2)
+    if not start_measurements:
+        try:
+            # Read temperature
+            multimeter.write(':READ?')
+            tmp= dt400.voltage_to_temp(float(multimeter.read()))
+            print(f'Current Temperature:{tmp:.2f}°K', end='\r')
+        except gpib.GpibError as e:
+            logging.warning("Reading gpib error, check the multimeter: %s", e)
+    else:
+        ax0.plot(DT[:i], R[:i], '.-', color='orange')
+        ax1.plot(DT[:i], V[:i], '.-', color='red')
+        ax2.plot(DT[:i], T[:i], '.-', color='yellow')
+        if len(T) > 0:
+            # Rimozione delle annotazioni precedenti
+            for _k, ann_item in enumerate(ann_list):
+                ann_item.remove()
+            ann_list[:] = []
+            ## Annotazioni riportanti gli ultimi valori misurati
+            # Resistenza
+            an0 = ax0.annotate(f'{R[-1]:.3e}', xy=(1.01, 0.9),  xycoords='axes fraction', color="w")
+            # Voltaggio
+            an1 = ax1.annotate(f'{V[-1]:.3e}', xy=(1.01, 0.9),  xycoords='axes fraction', color="w")
+            # Temperatura
+            an2 = ax2.annotate(f'{T[-1]:.2e}', xy=(1.01, 0.9),  xycoords='axes fraction', color="w")
+            ann_list.append(an0)
+            ann_list.append(an1)
+            ann_list.append(an2)
 
 
 def on_close(event):
@@ -441,12 +455,14 @@ duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
         logging.info("Data not saved")
         if len(T) <= 0:
             logging.warning("Data empty")
-    try:
-        # Turn off source meter output
-        sm.write(':OUTP OFF')
-    except gpib.GpibError:
-        logging.warning("Couldn't turn off the Source Meter")
-        sys.exit(-1)
+    answer1 = eg.ynbox('Switch off the Source Meter?', 'Closing the experiment', ('Yes', 'No'))
+    if answer1:
+        try:
+            # Turn off source meter output
+            sm.write(':OUTP OFF')
+        except gpib.GpibError:
+            logging.warning("Couldn't turn off the Source Meter")
+            sys.exit(-1)
     if answer and len(T) > 0:
         # Copia del log
         shutil.copy(sys.argv[0].replace('.py', '.log'), path_file + ".log")
