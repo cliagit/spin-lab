@@ -362,6 +362,9 @@ def update_plot(i):
             print(f'Current Temperature:{tmp:.2f}°K', end='\r')
         except gpib.GpibError as e:
             logging.warning("Reading gpib error, check the multimeter: %s", e)
+        except ValueError:
+            logging.warning('Temperature out of range!')
+
     else:
         ax0.plot(DT[:i], R[:i], '.-', color='orange')
         ax1.plot(DT[:i], V[:i], '.-', color='red')
