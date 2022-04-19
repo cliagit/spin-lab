@@ -45,6 +45,8 @@ LENGTH = conf.getfloat('LENGTH')
 AVG_MEASURE = conf.getint('AVG_MEASURE')
 # Current number of samples
 SOURCE_I_SAMPLES = conf.getint('SOURCE_I_SAMPLES')
+# Misure in continuo
+continuous_mode = conf.getboolean('CONTINUOUS_MODE')
 
 # Select fixed or variable source
 if conf.getboolean('SOURCE_FIXED'):
@@ -176,8 +178,6 @@ exit_event = threading.Event()
 
 def measure_thread_function():
     """ Measurement thread """
-    # Numero di campioni sul quale fare la media
-    # num_samples = 2
     global start_measurements
     start_measurements = False
 
@@ -205,6 +205,8 @@ def measure_thread_function():
     # Array of current density values
     global J
     J = []
+    eg.msgbox('Start new measurement in continuous mode; to stop the measurement close the plot \
+window')
     logging.info("Start the measurement loop")
     # Measurement loop
     while True:
@@ -219,22 +221,23 @@ def measure_thread_function():
         if exit_event.is_set():
             logging.info("End of the measurement loop")
             break
-        answer = 'temperature'
-        while 'temperature' in answer:
-            try:
-                # Read temperature
-                multimeter.write(':READ?')
-                tmp= dt400.voltage_to_temp(float(multimeter.read()))
-            except gpib.GpibError as e:
-                logging.warning("Reading gpib error, check the multimeter: %s", e)
-                # print(f"Reading error, check the instruments: {e}")
-            start_measurements = False
-            # Dialogo per l'avvio del ciclo di corrente
-            answer = eg.buttonbox(f'Start new measurement loop at the current temperature: \
-{tmp:.2f}? If you answer No, close the plot window to save the experiment',\
-'Measurement loop', ('Yes, go on', 'Show me the temperature' ,'No, I have done'))
-        if not answer == 'Yes, go on':
-            break
+        if continuous_mode:
+            answer = 'temperature'
+            while 'temperature' in answer:
+                try:
+                    # Read temperature
+                    multimeter.write(':READ?')
+                    tmp= dt400.voltage_to_temp(float(multimeter.read()))
+                except gpib.GpibError as e:
+                    logging.warning("Reading gpib error, check the multimeter: %s", e)
+                    # print(f"Reading error, check the instruments: {e}")
+                start_measurements = False
+                # Dialogo per l'avvio del ciclo di corrente
+                answer = eg.buttonbox(f'Start new measurement loop at the current temperature: \
+    {tmp:.2f}? If you answer No, close the plot window to save the experiment',\
+    'Measurement loop', ('Yes, go on', 'Show me the temperature' ,'No, I have done'))
+            if not answer == 'Yes, go on':
+                break
         start_measurements = True
         # nvolt_measure_prev = -1000.0
         # Ciclo della corrente
