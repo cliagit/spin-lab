@@ -47,6 +47,8 @@ AVG_MEASURE = conf.getint('AVG_MEASURE')
 SOURCE_I_SAMPLES = conf.getint('SOURCE_I_SAMPLES')
 # Misure in continuo
 continuous_mode = conf.getboolean('CONTINUOUS_MODE')
+# Numero di punti da visualizzare sul grafico
+DISPLAY_SAMPLES = int(SOURCE_I_SAMPLES * 1.15)
 
 # Select fixed or variable source
 if conf.getboolean('SOURCE_FIXED'):
@@ -67,6 +69,7 @@ else:
 # Append flipped current array of num sample from end to start
 if SOURCE_FLIPPED:
     SOURCE_I = np.concatenate((SOURCE_I, np.flip(SOURCE_I)))
+    DISPLAY_SAMPLES *= 2
     title += ' flipped'
     logging.info('Source is flipped')
 
@@ -134,7 +137,7 @@ except gpib.GpibError as e:
 #    # Select source range.
 #    #sm.write(":SOUR:CURR:RANG 10E-3")
 #    # Source output.
-#    sm.write(f":SOUR:CURR:LEV 0.0")
+#    sm.write(f":SOUR:CURR:LEV {SOURCE_I[0]}")
 #    # Voltage compliance.
 #    sm.write(f':SENS:VOLT:PROT {conf["LIM_VOLT"]}')
 #    # Voltage measure function.
@@ -162,7 +165,7 @@ try:
     # Select source range.
     sm.write(":SOUR:CURR:RANG:AUTO ON")
     # Source output.
-    sm.write(f":SOUR:CURR 0.0")
+    sm.write(f":SOUR:CURR {SOURCE_I[0]}")
     # Compliance.voltage limit
     sm.write(f':SOUR:CURR:COMP {conf["LIM_VOLT"]}')
     # Turn on output
@@ -205,7 +208,8 @@ def measure_thread_function():
     # Array of current density values
     global J
     J = []
-    eg.msgbox('Start new measurement in continuous mode; to stop the measurement close the plot \
+    if continuous_mode:
+        eg.msgbox('Start new measurement in continuous mode; to stop the measurement close the plot \
 window')
     logging.info("Start the measurement loop")
     # Measurement loop
@@ -221,7 +225,7 @@ window')
         if exit_event.is_set():
             logging.info("End of the measurement loop")
             break
-        if continuous_mode:
+        if not continuous_mode:
             answer = 'temperature'
             while 'temperature' in answer:
                 try:
@@ -357,6 +361,7 @@ ann_list = []
 def update_plot(i):
     """ animation function.  This is called sequentially """
    # print(i, T[i], R[i])
+    N = len(DT)
     if not start_measurements:
         try:
             # Read temperature
@@ -369,10 +374,18 @@ def update_plot(i):
             logging.warning('Temperature out of range!')
 
     else:
-        ax0.plot(DT[:i], R[:i], '.-', color='orange')
-        ax1.plot(DT[:i], V[:i], '.-', color='red')
-        ax2.plot(DT[:i], T[:i], '.-', color='yellow')
-        if len(T) > 0:
+        if N > DISPLAY_SAMPLES:
+            ax0.set_xlim([DT[N - DISPLAY_SAMPLES], DT[N-1]])
+            ax1.set_xlim([DT[N - DISPLAY_SAMPLES], DT[N-1]])
+            ax2.set_xlim([DT[N - DISPLAY_SAMPLES], DT[N-1]])
+            ax0.plot(DT[N - DISPLAY_SAMPLES:N-1], R[N - DISPLAY_SAMPLES:N-1], '.-', color='orange')
+            ax1.plot(DT[N - DISPLAY_SAMPLES:N-1], V[N - DISPLAY_SAMPLES:N-1], '.-', color='red')
+            ax2.plot(DT[N - DISPLAY_SAMPLES:N-1], T[N - DISPLAY_SAMPLES:N-1], '.-', color='yellow')
+        else:
+            ax0.plot(DT[:i], R[:i], '.-', color='orange')
+            ax1.plot(DT[:i], V[:i], '.-', color='red')
+            ax2.plot(DT[:i], T[:i], '.-', color='yellow')
+        if N > 0:
             # Rimozione delle annotazioni precedenti
             for _k, ann_item in enumerate(ann_list):
                 ann_item.remove()
@@ -387,7 +400,6 @@ def update_plot(i):
             ann_list.append(an0)
             ann_list.append(an1)
             ann_list.append(an2)
-
 
 def on_close(event):
     """ On close plotting window event handler """
@@ -476,6 +488,7 @@ duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
     sys.exit(0)
 
 anim = animation.FuncAnimation(plt.gcf(), update_plot, interval=500, blit=False)
+# anim = animation.FuncAnimation(fig, update_plot, interval=200, blit=True)
 
 # Impostazione dell'evento della chiusura della finestra
 fig.canvas.mpl_connect('close_event', on_close)

@@ -164,7 +164,7 @@ if fixedTemperature and not fixedCurrent:
 if not fixedTemperature and fixedCurrent:
     fig, [ax, ax1] = plt.subplots(2,1)
     # Plot V vs T
-    ax.plot(T, V, "-")
+    ax.plot(T, V, ".")
     # Annotate Start point
     # ax.annotate("Start", xy=(T[0], V[0]), xycoords='data', color="green")
 
@@ -174,7 +174,7 @@ if not fixedTemperature and fixedCurrent:
     ax.grid()
 
     # Plot RHO vs T
-    ax1.plot(T, RHO, "-")
+    ax1.plot(T, RHO, ".")
     # Annotate Start point
     # ax1.annotate("Start", xy=(T[0], RHO[0]), xycoords='data', color="green")
 
