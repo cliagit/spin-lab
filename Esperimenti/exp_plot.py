@@ -15,11 +15,13 @@ file_data = eg.fileopenbox(msg="Browse data", title=None, default='/home/spin/Es
                            filetypes=["*.npz"], multiple=True)
 index = 0
 for file in file_data:
-    # Visualizzazione della descrizione dell'esperimento
-    with open(file.replace('.npz',''), "r", encoding='utf-8') as file_desc:
-        text = file_desc.read()
-        print(text)
-        # eg.textbox('', 'Description', text, run=True)
+    try:
+        # Visualizzazione della descrizione dell'esperimento
+        with open(file.replace('.npz',''), "r", encoding='utf-8') as file_desc:
+            text = file_desc.read()
+            print(text)
+    except FileNotFoundError:
+        print(f"Description of {file} not found.")
 
     # Caricamento dei dati
     data=np.load(file)
@@ -51,7 +53,7 @@ J = J * 1000
 I = I * 1000
 unit_current = "mA"
 
-fixedTemperature = np.max(T) - np.min(T) <= 5
+fixedTemperature = np.max(T) - np.min(T) <= 0.5
 fixedCurrent = np.max(I) == np.min(I)
 
 if not fixedTemperature and not fixedCurrent:
@@ -62,10 +64,10 @@ if not fixedTemperature and not fixedCurrent:
     # print(indexes_min, indexes_max)
     for i in range(len(indexes_min)):
         # Plot V vs I
-        ax.plot(I[indexes_min[i]:indexes_max[i]], V[indexes_min[i]:indexes_max[i]], '.-',
+        ax.plot(I[indexes_min[i]:indexes_max[i]], V[indexes_min[i]:indexes_max[i]], '.',
 label=f'{round(np.average(T[indexes_min[i]:indexes_max[i]]))}')
         # Plot RHO vs J
-        ax1.plot(J[indexes_min[i]:indexes_max[i]], RHO[indexes_min[i]:indexes_max[i]], '.-',
+        ax1.plot(J[indexes_min[i]:indexes_max[i]], RHO[indexes_min[i]:indexes_max[i]], '.',
 label=f'{round(np.average(T[indexes_min[i]:indexes_max[i]]))}',)
  
     ax.set(xlabel=unit_current, ylabel='V', title="V vs I", yscale='linear')
@@ -79,7 +81,7 @@ label=f'{round(np.average(T[indexes_min[i]:indexes_max[i]]))}',)
     fig, ax2 = plt.subplots()
     for j in range(0, indexes_min[1], 10):
        # print(indexes_min + j, I[indexes_min + j])
-        ax2.plot(T[indexes_min + j], RHO[indexes_min + j], '.-',
+        ax2.plot(T[indexes_min + j], RHO[indexes_min + j], '.',
 label=f'{J[indexes_min + j][0]:.2f}',)
 
     ax2.set(xlabel='°K', ylabel='Ohm cm', title="RHO vs T", yscale='linear', xscale='linear')

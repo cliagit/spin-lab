@@ -209,9 +209,11 @@ def measure_thread_function():
     global J
     J = []
     if continuous_mode:
-        eg.msgbox('Start new measurement in continuous mode; to stop the measurement close the plot \
+        eg.msgbox('Start new measurement loop in continuous mode; to stop and save the measurements close the plot \
 window')
-    logging.info("Start the measurement loop")
+        logging.info("Start the measurement loop in continuous mode")
+    else:
+        logging.info("Start the measurement loop")
     # Measurement loop
     while True:
         try:
@@ -319,7 +321,7 @@ E:{e_field:.4e}V/cm J:{c_density:.4e}A/cm2 𝛒:{rho:.4e}𝛀 cm'
 #E:{e_field:.4e}V/cm J:{c_density:.4e}A/cm2 𝛒:{rho:.4e}𝛀 cm',
 #                end="\r")
                 logging.info('%s', log_measure)
-                if volt >= float(conf["LIM_VOLT"]):
+                if volt >= float(conf["LIM_VOLT"]) - 0.1:
                     logging.warning("Voltage compliance")
                 else:
                     # Update current array
@@ -339,7 +341,6 @@ E:{e_field:.4e}V/cm J:{c_density:.4e}A/cm2 𝛒:{rho:.4e}𝛀 cm'
                     J.append(c_density)
                     # Resistività
                     RHO.append(rho)
-
 
 # Configure and Start Measurement thread loop
 thr_measure = threading.Thread(target=measure_thread_function)
@@ -375,16 +376,23 @@ def update_plot(i):
 
     else:
         if N > DISPLAY_SAMPLES:
-            ax0.set_xlim([DT[N - DISPLAY_SAMPLES], DT[N-1]])
-            ax1.set_xlim([DT[N - DISPLAY_SAMPLES], DT[N-1]])
-            ax2.set_xlim([DT[N - DISPLAY_SAMPLES], DT[N-1]])
-            ax0.plot(DT[N - DISPLAY_SAMPLES:N-1], R[N - DISPLAY_SAMPLES:N-1], '.-', color='orange')
-            ax1.plot(DT[N - DISPLAY_SAMPLES:N-1], V[N - DISPLAY_SAMPLES:N-1], '.-', color='red')
-            ax2.plot(DT[N - DISPLAY_SAMPLES:N-1], T[N - DISPLAY_SAMPLES:N-1], '.-', color='yellow')
+            ax0.cla()
+            ax0.grid()
+            ax1.cla()
+            ax1.grid()
+            ax2.cla()
+            ax2.grid()
+            #ax0.set_xlim([DT[N - DISPLAY_SAMPLES], DT[N-1]])
+            #ax1.set_xlim([DT[N - DISPLAY_SAMPLES], DT[N-1]])
+            #ax2.set_xlim([DT[N - DISPLAY_SAMPLES], DT[N-1]])
+            ax0.plot(DT[N - DISPLAY_SAMPLES:-1], R[N - DISPLAY_SAMPLES:-1], '.-', color='orange')
+            ax1.plot(DT[N - DISPLAY_SAMPLES:-1], V[N - DISPLAY_SAMPLES:-1], '.-', color='red')
+            ax2.plot(DT[N - DISPLAY_SAMPLES:-1], T[N - DISPLAY_SAMPLES:-1], '.-', color='yellow')
         else:
             ax0.plot(DT[:i], R[:i], '.-', color='orange')
             ax1.plot(DT[:i], V[:i], '.-', color='red')
             ax2.plot(DT[:i], T[:i], '.-', color='yellow')
+
         if N > 0:
             # Rimozione delle annotazioni precedenti
             for _k, ann_item in enumerate(ann_list):
