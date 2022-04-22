@@ -7,6 +7,7 @@
 '''
 from datetime import datetime
 from time import sleep
+from scipy import signal
 import threading
 import configparser
 import sys
@@ -45,6 +46,8 @@ LENGTH = conf.getfloat('LENGTH')
 AVG_MEASURE = conf.getint('AVG_MEASURE')
 # Current number of samples
 SOURCE_I_SAMPLES = conf.getint('SOURCE_I_SAMPLES')
+SOURCE_FLIPPED = conf.getboolean('SOURCE_FLIPPED')
+
 # Misure in continuo
 continuous_mode = conf.getboolean('CONTINUOUS_MODE')
 # Numero di punti da visualizzare sul grafico
@@ -57,14 +60,20 @@ if conf.getboolean('SOURCE_FIXED'):
     SOURCE_I =  np.ones(SOURCE_I_SAMPLES) * conf.getfloat('SOURCE_I_FIXED')
     title = f"{SAMPLE_NAME} at fixed current {conf['SOURCE_I_FIXED']}A"
 else:
-    SOURCE_FLIPPED = conf.getboolean('SOURCE_FLIPPED')
-    # Current min source
-    SOURCE_I_MIN = conf.getfloat('SOURCE_I_MIN')
-    # Current max source
-    SOURCE_I_MAX = conf.getfloat('SOURCE_I_MAX')
-    # Current array of num sample from start to end equally spaced
-    SOURCE_I = np.linspace(SOURCE_I_MIN, SOURCE_I_MAX, SOURCE_I_SAMPLES)
-    title = f"{SAMPLE_NAME} current from {conf['SOURCE_I_MIN']} to {conf['SOURCE_I_MAX']}A"
+    if conf.getboolean('SOURCE_I_SQUARE_WAVE'):
+        SOURCE_I_SQUARE_VALUE = conf.getfloat('SOURCE_I_SQUARE_VALUE')
+        SOURCE_I_SQUARE_PERIOD = conf.getint('SOURCE_I_SQUARE_PERIOD')
+        t = np.linspace(0, 1, SOURCE_I_SAMPLES)
+        SOURCE_I = signal.square(( 2 * np.pi * SOURCE_I_SQUARE_PERIOD *t )) * SOURCE_I_SQUARE_VALUE
+        title = f"{SAMPLE_NAME} square waveform value {SOURCE_I_SQUARE_VALUE}A"
+    else:
+        # Current min source
+        SOURCE_I_MIN = conf.getfloat('SOURCE_I_MIN')
+        # Current max source
+        SOURCE_I_MAX = conf.getfloat('SOURCE_I_MAX')
+        # Current array of num sample from start to end equally spaced
+        SOURCE_I = np.linspace(SOURCE_I_MIN, SOURCE_I_MAX, SOURCE_I_SAMPLES)
+        title = f"{SAMPLE_NAME} current from {conf['SOURCE_I_MIN']} to {conf['SOURCE_I_MAX']}A"
 
 # Append flipped current array of num sample from end to start
 if SOURCE_FLIPPED:
@@ -382,6 +391,9 @@ def update_plot(i):
             ax1.grid()
             ax2.cla()
             ax2.grid()
+            ax0.set(ylabel='Resistance [Ohm]', xlabel='Time', title=title)
+            ax1.set(ylabel='Voltage [V]', xlabel='Time')# , yscale='log', xscale='log')
+            ax2.set(ylabel='Temperature [°K]', xlabel='Time') # , yscale='log', xscale='log')
             #ax0.set_xlim([DT[N - DISPLAY_SAMPLES], DT[N-1]])
             #ax1.set_xlim([DT[N - DISPLAY_SAMPLES], DT[N-1]])
             #ax2.set_xlim([DT[N - DISPLAY_SAMPLES], DT[N-1]])
@@ -496,7 +508,6 @@ duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
     sys.exit(0)
 
 anim = animation.FuncAnimation(plt.gcf(), update_plot, interval=500, blit=False)
-# anim = animation.FuncAnimation(fig, update_plot, interval=200, blit=True)
 
 # Impostazione dell'evento della chiusura della finestra
 fig.canvas.mpl_connect('close_event', on_close)

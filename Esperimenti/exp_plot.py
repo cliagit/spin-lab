@@ -53,7 +53,7 @@ J = J * 1000
 I = I * 1000
 unit_current = "mA"
 
-fixedTemperature = np.max(T) - np.min(T) <= 0.5
+fixedTemperature = np.max(T) - np.min(T) < 1
 fixedCurrent = np.max(I) == np.min(I)
 
 if not fixedTemperature and not fixedCurrent:
@@ -81,7 +81,7 @@ label=f'{round(np.average(T[indexes_min[i]:indexes_max[i]]))}',)
     fig, ax2 = plt.subplots()
     for j in range(0, indexes_min[1], 10):
        # print(indexes_min + j, I[indexes_min + j])
-        ax2.plot(T[indexes_min + j], RHO[indexes_min + j], '.',
+        ax2.plot(T[indexes_min + j], RHO[indexes_min + j], '.-',
 label=f'{J[indexes_min + j][0]:.2f}',)
 
     ax2.set(xlabel='°K', ylabel='Ohm cm', title="RHO vs T", yscale='linear', xscale='linear')
@@ -166,7 +166,7 @@ if fixedTemperature and not fixedCurrent:
 if not fixedTemperature and fixedCurrent:
     fig, [ax, ax1] = plt.subplots(2,1)
     # Plot V vs T
-    ax.plot(T, V, ".")
+    ax.plot(T, V, ".-")
     # Annotate Start point
     # ax.annotate("Start", xy=(T[0], V[0]), xycoords='data', color="green")
 
@@ -176,7 +176,7 @@ if not fixedTemperature and fixedCurrent:
     ax.grid()
 
     # Plot RHO vs T
-    ax1.plot(T, RHO, ".")
+    ax1.plot(T, RHO, ".-")
     # Annotate Start point
     # ax1.annotate("Start", xy=(T[0], RHO[0]), xycoords='data', color="green")
 
