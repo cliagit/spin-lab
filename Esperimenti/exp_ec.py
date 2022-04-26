@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 '''
- I-V characteristic. Keithely Source meter as fixed or variable current generator and
+ Electrical characteristic experiment with current source.
+ Keithely Source meter as fixed or variable current generator and
  Nano Voltmeter as voltage reader on channel 1
  Keithely multimeter 2000 or 2700 to measure temperature with silicon diode DT470
 '''
@@ -45,35 +46,36 @@ LENGTH = conf.getfloat('LENGTH')
 # Numero di valori sui quali fare la media
 AVG_MEASURE = conf.getint('AVG_MEASURE')
 # Current number of samples
-SOURCE_I_SAMPLES = conf.getint('SOURCE_I_SAMPLES')
+SOURCE_SAMPLES = conf.getint('SOURCE_SAMPLES')
 SOURCE_FLIPPED = conf.getboolean('SOURCE_FLIPPED')
 
 # Misure in continuo
 continuous_mode = conf.getboolean('CONTINUOUS_MODE')
 # Numero di punti da visualizzare sul grafico
-DISPLAY_SAMPLES = int(SOURCE_I_SAMPLES * 1.15)
+DISPLAY_SAMPLES = int(SOURCE_SAMPLES * 1.15)
 
 # Select fixed or variable source
 if conf.getboolean('SOURCE_FIXED'):
     SOURCE_FLIPPED = False
     # Current fixed source
-    SOURCE_I =  np.ones(SOURCE_I_SAMPLES) * conf.getfloat('SOURCE_I_FIXED')
-    title = f"{SAMPLE_NAME} at fixed current {conf['SOURCE_I_FIXED']}A"
+    SOURCE_I =  np.ones(SOURCE_SAMPLES) * conf.getfloat('SOURCE_FIXED_VALUE')
+    title = f"{SAMPLE_NAME} at fixed current {conf['SOURCE_FIXED_VALUE']}A"
 else:
-    if conf.getboolean('SOURCE_I_SQUARE_WAVE'):
-        SOURCE_I_SQUARE_VALUE = conf.getfloat('SOURCE_I_SQUARE_VALUE')
-        SOURCE_I_SQUARE_PERIOD = conf.getint('SOURCE_I_SQUARE_PERIOD')
-        t = np.linspace(0, 1, SOURCE_I_SAMPLES)
-        SOURCE_I = signal.square(( 2 * np.pi * SOURCE_I_SQUARE_PERIOD *t )) * SOURCE_I_SQUARE_VALUE
-        title = f"{SAMPLE_NAME} square waveform value {SOURCE_I_SQUARE_VALUE}A"
+    if conf.getboolean('SOURCE_SQUARE_WAVE'):
+        SOURCE_FLIPPED = False
+        SOURCE_SQUARE_VALUE = conf.getfloat('SOURCE_SQUARE_VALUE')
+        SOURCE_SQUARE_PERIOD = conf.getint('SOURCE_SQUARE_PERIOD')
+        t = np.linspace(0, 1, SOURCE_SAMPLES)
+        SOURCE_I = signal.square(( 2 * np.pi * SOURCE_SQUARE_PERIOD *t )) * SOURCE_SQUARE_VALUE
+        title = f"{SAMPLE_NAME} current square waveform value {SOURCE_SQUARE_VALUE}A"
     else:
         # Current min source
-        SOURCE_I_MIN = conf.getfloat('SOURCE_I_MIN')
+        SOURCE_MIN_VALUE = conf.getfloat('SOURCE_MIN_VALUE')
         # Current max source
-        SOURCE_I_MAX = conf.getfloat('SOURCE_I_MAX')
+        SOURCE_MAX_VALUE = conf.getfloat('SOURCE_MAX_VALUE')
         # Current array of num sample from start to end equally spaced
-        SOURCE_I = np.linspace(SOURCE_I_MIN, SOURCE_I_MAX, SOURCE_I_SAMPLES)
-        title = f"{SAMPLE_NAME} current from {conf['SOURCE_I_MIN']} to {conf['SOURCE_I_MAX']}A"
+        SOURCE_I = np.linspace(SOURCE_MIN_VALUE, SOURCE_MAX_VALUE, SOURCE_SAMPLES)
+        title = f"{SAMPLE_NAME} current from {conf['SOURCE_MIN_VALUE']} to {conf['SOURCE_MAX_VALUE']}A"
 
 # Append flipped current array of num sample from end to start
 if SOURCE_FLIPPED:
@@ -148,7 +150,7 @@ except gpib.GpibError as e:
 #    # Source output.
 #    sm.write(f":SOUR:CURR:LEV {SOURCE_I[0]}")
 #    # Voltage compliance.
-#    sm.write(f':SENS:VOLT:PROT {conf["LIM_VOLT"]}')
+#    sm.write(f':SENS:VOLT:PROT {conf["LIMIT"]}')
 #    # Voltage measure function.
 #    sm.write(":SENS:FUNC 'VOLT'")
 #    # Voltage reading only.
@@ -176,7 +178,7 @@ try:
     # Source output.
     sm.write(f":SOUR:CURR {SOURCE_I[0]}")
     # Compliance.voltage limit
-    sm.write(f':SOUR:CURR:COMP {conf["LIM_VOLT"]}')
+    sm.write(f':SOUR:CURR:COMP {conf["LIMIT"]}')
     # Turn on output
     sm.write(":OUTP ON")
 except gpib.GpibError as e:
@@ -317,7 +319,7 @@ window')
             #                # Lettura del voltaggio misurato al Source Meter 2400
             #                sm.write(':READ?')
             #                voltSm = float(sm.read())
-            #                lim = float(conf["LIM_VOLT"])
+            #                lim = float(conf["LIMIT"])
             #                # print(f'T:{temp:.2f}°K V:{volt:.3f} V R:{res:.3f} 𝛀
             #                        Voltage limit: {(voltSm*100)/lim:.2f}%', end="\r")
             #            except:
@@ -330,7 +332,7 @@ E:{e_field:.4e}V/cm J:{c_density:.4e}A/cm2 𝛒:{rho:.4e}𝛀 cm'
 #E:{e_field:.4e}V/cm J:{c_density:.4e}A/cm2 𝛒:{rho:.4e}𝛀 cm',
 #                end="\r")
                 logging.info('%s', log_measure)
-                if volt >= float(conf["LIM_VOLT"]) - 0.1:
+                if volt >= float(conf["LIMIT"]) - 0.1:
                     logging.warning("Voltage compliance")
                 else:
                     # Update current array
@@ -446,13 +448,15 @@ def on_close(event):
                 file.write(f"\nArea: {conf['AREA']}cm2")
                 file.write(f"\nLength: {conf['LENGTH']}cm")
                 if conf.getboolean('SOURCE_FIXED'):
-                    file.write(f"\nCurrent source fixed at {conf['SOURCE_I_FIXED']}A")
+                    file.write(f"\nCurrent source fixed at {conf['SOURCE_FIXED_VALUE']}A")
+                elif conf.getboolean('SOURCE_SQUARE_WAVE'):
+                   file.write(f"\nCurrent square waveform source, value {conf['SOURCE_SQUARE_VALUE']}A")
                 elif SOURCE_FLIPPED:
-                    file.write(f"\nCurrent source starts and ends at {conf['SOURCE_I_MIN']}A \
-through {conf['SOURCE_I_MAX']}A")
+                    file.write(f"\nCurrent source starts and ends at {conf['SOURCE_MIN_VALUE']}A \
+through {conf['SOURCE_MAX_VALUE']}A")
                 else:
-                    file.write(f"\nCurrent source from {conf['SOURCE_I_MIN']}A to \
-{conf['SOURCE_I_MAX']}A")
+                    file.write(f"\nCurrent source from {conf['SOURCE_MIN_VALUE']}A to \
+{conf['SOURCE_MAX_VALUE']}A")
                 file.write(f'\n\n### Experiment {date_time} ###')
                 file.write(f'\nDate {DT[0].strftime("%Y-%m-%d")} start at \
 {DT[0].strftime("%H:%M:%S")} end at {DT[-1].strftime("%H:%M:%S")} \

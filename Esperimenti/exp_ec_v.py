@@ -61,6 +61,7 @@ if conf.getboolean('SOURCE_FIXED'):
     title = f"{SAMPLE_NAME} at fixed voltage {conf['SOURCE_FIXED_VALUE']}V"
 else:
     if conf.getboolean('SOURCE_SQUARE_WAVE'):
+        SOURCE_FLIPPED = False
         SOURCE_SQUARE_VALUE = conf.getfloat('SOURCE_SQUARE_VALUE')
         SOURCE_SQUARE_PERIOD = conf.getint('SOURCE_SQUARE_PERIOD')
         t = np.linspace(0, 1, SOURCE_SAMPLES)
