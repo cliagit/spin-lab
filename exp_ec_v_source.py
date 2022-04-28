@@ -267,7 +267,7 @@ E:{e_field:.4e}V/cm J:{c_density:.4e}A/cm2 𝛒:{rho:.4e}𝛀 cm'
 #E:{e_field:.4e}V/cm J:{c_density:.4e}A/cm2 𝛒:{rho:.4e}𝛀 cm',
 #                end="\r")
                 logging.info('%s', log_measure)
-                if curr >= float(conf["LIMIT"]) - 0.1:
+                if curr >= float(conf["LIMIT"])*0.95:
                     logging.warning("Current compliance")
                 else:
                     # Update current array

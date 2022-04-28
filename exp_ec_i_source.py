@@ -258,6 +258,23 @@ to stop and save the measurements close the plot window')
     'Measurement loop', ('Yes, go on', 'Show me the temperature' ,'No, I have done'))
             if not answer == 'Yes, go on':
                 break
+
+        ### Per ovviare agli spegnimenti del 2400 ###
+        #Select current source.
+        sm.write(":SOUR:FUNC CURR")
+        # Select source range.
+        #sm.write(":SOUR:CURR:RANG 10E-3")
+        # Source output.
+        sm.write(f":SOUR:CURR:LEV {SOURCE_I[0]}")
+        # Voltage compliance.
+        sm.write(f':SENS:VOLT:PROT {conf["LIMIT"]}')
+        # Voltage measure function.
+        sm.write(":SENS:FUNC 'VOLT'")
+        # Voltage reading only.
+        sm.write(":FORM:ELEM VOLT")
+        # Turn on source meter output
+        sm.write(":OUTP ON")
+
         start_measurements = True
         # nvolt_measure_prev = -1000.0
         # Ciclo della corrente
@@ -268,7 +285,6 @@ to stop and save the measurements close the plot window')
                     logging.info("Leaving the current loop")
                     # print("Uscita ciclo di corrente")
                     break
-
                 # Impostazione della corrente.
                 sm.write(f":SOUR:CURR {i}")
                 logging.info("Measurement at current %s", i)
@@ -335,7 +351,7 @@ E:{e_field:.4e}V/cm J:{c_density:.4e}A/cm2 𝛒:{rho:.4e}𝛀 cm'
 #E:{e_field:.4e}V/cm J:{c_density:.4e}A/cm2 𝛒:{rho:.4e}𝛀 cm',
 #                end="\r")
                 logging.info('%s', log_measure)
-                if volt >= float(conf["LIMIT"]) - 0.1:
+                if volt >= float(conf["LIMIT"])*0.95:
                     logging.warning("Voltage compliance")
                 else:
                     # Update current array
