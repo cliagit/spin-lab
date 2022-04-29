@@ -134,58 +134,58 @@ except gpib.GpibError as e:
 
 ### Configurazione del SourceMeter Keithley 2400
 # Port GPIB 0, GPIB Intrument address 24
+#try:
+#    sm=Gpib.Gpib(0,24)
+#    # Reset GPIB defaults
+#    sm.write("*RST")
+#    # Identify request
+#    sm.write("*IDN?")
+#    # Read answer from device
+#    logging.info('Found Source Meter %s', sm.read().decode("utf-8"))
+#    # print(sm.read().decode('utf-8'))
+#### Select source function, mode '''
+#    #Select current source.
+#    sm.write(":SOUR:FUNC CURR")
+#    # Select source range.
+#    #sm.write(":SOUR:CURR:RANG 10E-3")
+#    # Source output.
+#    sm.write(f":SOUR:CURR:LEV {SOURCE_I[0]}")
+#    # Voltage compliance.
+#    sm.write(f':SENS:VOLT:PROT {conf["LIMIT"]}')
+#    # Voltage measure function.
+#    sm.write(":SENS:FUNC 'VOLT'")
+#    # Voltage reading only.
+#    sm.write(":FORM:ELEM VOLT")
+#    # Turn on source meter output
+#    sm.write(":OUTP ON")
+#except gpib.GpibError as e:
+#    logging.fatal("Source meter 2400 doesn't respond: %s", e)
+#    print("Source meter doesn't respond, check it out!", e)
+#    sys.exit(-1)
+
+### Configurazione del SourceMeter Keithley 6221
+# Port GPIB 0, GPIB Intrument address 24
 try:
     sm=Gpib.Gpib(0,24)
     # Reset GPIB defaults
     sm.write("*RST")
     # Identify request
     sm.write("*IDN?")
-    # Read answer from device
+    # Read answer
     logging.info('Found Source Meter %s', sm.read().decode("utf-8"))
-    # print(sm.read().decode('utf-8'))
-### Select source function, mode '''
-    #Select current source.
-    sm.write(":SOUR:FUNC CURR")
+    sm.write(":CLE")
     # Select source range.
-    #sm.write(":SOUR:CURR:RANG 10E-3")
+    sm.write(":SOUR:CURR:RANG:AUTO ON")
     # Source output.
-    sm.write(f":SOUR:CURR:LEV {SOURCE_I[0]}")
-    # Voltage compliance.
-    sm.write(f':SENS:VOLT:PROT {conf["LIMIT"]}')
-    # Voltage measure function.
-    sm.write(":SENS:FUNC 'VOLT'")
-    # Voltage reading only.
-    sm.write(":FORM:ELEM VOLT")
-    # Turn on source meter output
+    sm.write(f":SOUR:CURR {SOURCE_I[0]}")
+    # Compliance.voltage limit
+    sm.write(f':SOUR:CURR:COMP {conf["LIMIT"]}')
+    # Turn on output
     sm.write(":OUTP ON")
 except gpib.GpibError as e:
-    logging.fatal("Source meter 2400 doesn't respond: %s", e)
-    print("Source meter doesn't respond, check it out!", e)
+    logging.fatal("Source meter 6221 doesn't respond: %s", e)
+    print("Source meter 6221 doesn't respond, check it out!", e)
     sys.exit(-1)
-
-### Configurazione del SourceMeter Keithley 6220
-# Port GPIB 0, GPIB Intrument address 12
-#try:
-#    sm=Gpib.Gpib(0,12)
-#    # Reset GPIB defaults
-#    sm.write("*RST")
-#    # Identify request
-#    sm.write("*IDN?")
-#    # Read answer
-#    logging.info('Found Source Meter %s', sm.read().decode("utf-8"))
-#    sm.write(":CLE")
-#    # Select source range.
-#    sm.write(":SOUR:CURR:RANG:AUTO ON")
-#    # Source output.
-#    sm.write(f":SOUR:CURR {SOURCE_I[0]}")
-#    # Compliance.voltage limit
-#    sm.write(f':SOUR:CURR:COMP {conf["LIMIT"]}')
-#    # Turn on output
-#    sm.write(":OUTP ON")
-#except gpib.GpibError as e:
-#    logging.fatal("Source meter 6220 doesn't respond: %s", e)
-#    print("Source meter 6220 doesn't respond, check it out!", e)
-#    sys.exit(-1)
 
 # Instantiate threading event handler
 # Evento uscita dal ciclo di misura
@@ -261,19 +261,19 @@ to stop and save the measurements close the plot window')
 
         ### Per ovviare agli spegnimenti del 2400 ###
         #Select current source.
-        sm.write(":SOUR:FUNC CURR")
-        # Select source range.
-        #sm.write(":SOUR:CURR:RANG 10E-3")
-        # Source output.
-        sm.write(f":SOUR:CURR:LEV {SOURCE_I[0]}")
-        # Voltage compliance.
-        sm.write(f':SENS:VOLT:PROT {conf["LIMIT"]}')
-        # Voltage measure function.
-        sm.write(":SENS:FUNC 'VOLT'")
-        # Voltage reading only.
-        sm.write(":FORM:ELEM VOLT")
-        # Turn on source meter output
-        sm.write(":OUTP ON")
+#        sm.write(":SOUR:FUNC CURR")
+#        # Select source range.
+#        #sm.write(":SOUR:CURR:RANG 10E-3")
+#        # Source output.
+#        sm.write(f":SOUR:CURR:LEV {SOURCE_I[0]}")
+#        # Voltage compliance.
+#        sm.write(f':SENS:VOLT:PROT {conf["LIMIT"]}')
+#        # Voltage measure function.
+#        sm.write(":SENS:FUNC 'VOLT'")
+#        # Voltage reading only.
+#        sm.write(":FORM:ELEM VOLT")
+#        # Turn on source meter output
+#        sm.write(":OUTP ON")
 
         start_measurements = True
         # nvolt_measure_prev = -1000.0
