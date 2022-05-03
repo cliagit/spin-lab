@@ -23,9 +23,10 @@ for file in file_data:
     except FileNotFoundError:
         print(f"Description of {file} not found.")
     # Caricamento dei dati
-    data=np.load(file)
+    data=np.load(file, allow_pickle=True)
     try:
         if index == 0:
+            DT = data['datetime']
             V = data['voltage']
             R = data['resistance']
             T = data['temperature']
@@ -34,6 +35,7 @@ for file in file_data:
             E = data['electric_field']
             RHO = data['resistivity']
         else:
+            DT = np.append(DT, data['datetime'], axis=0)
             V = np.append(V, data['voltage'], axis=0)
             R = np.append(R, data['resistance'], axis=0)
             T = np.append(T, data['temperature'], axis=0)
