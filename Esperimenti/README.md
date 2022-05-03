@@ -1,4 +1,4 @@
 # spin-lab-data
 # Dati riguardanti le sperimentazioni sull'analisi della caratteristica elettrica dei cristalli
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/cliagit/spin-lab-data/HEAD?labpath=exp_analysis_ca12x2-page_1.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/cliagit/spin-lab-data/HEAD?)
 
