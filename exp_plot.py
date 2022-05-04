@@ -136,17 +136,17 @@ label=f'{round(np.average(T[indexes_min[i]:indexes_max[i]]))}',)
 if fixedTemperature and not fixedCurrent:
     fig, [ax, ax1] = plt.subplots(2,1)
     try:
-        ax.plot(I, V, ".-")
+        ax.plot(J, E, ".-")
         # Annotate Start point
         # ax.plot(I[0], V[0], "o", color="green")
         ax.annotate("Start",
-            xy=(I[0], V[0]), xycoords='data', color="green")
+            xy=(J[0], E[0]), xycoords='data', color="green")
 
         # Annotate End point
         # ax.plot(I[-1], V[-1], "o", color="red")
         ax.annotate("End",
-            xy=(I[-1], V[-1]), xycoords='data', color="red")
-        ax.set(xlabel=unit_current, ylabel='V', title="V-I Characteristics") #, yscale='log', xscale='log')
+            xy=(J[-1], E[-1]), xycoords='data', color="red")
+        ax.set(xlabel=unit_current, ylabel='V/cm', title=f"E vs J at T={np.average(T):.0f}") #, yscale='log', xscale='log')
         ax.grid()
 
         ax1.plot(J, RHO, ".-")
@@ -159,7 +159,7 @@ if fixedTemperature and not fixedCurrent:
         # ax1.plot(J[-1], RHO[-1], "o", color="red")
         ax1.annotate("End",
            xy=(J[-1], RHO[-1]), xycoords='data', color="red")
-        ax1.set(xlabel=unit_current +'/cm2', ylabel='Ohm cm', title="Resistivity vs J")
+        ax1.set(xlabel=unit_current +'/cm2', ylabel='Ohm cm', title=f"Resistivity vs J at T={np.average(T):.0f}")
         #, yscale='log', xscale='log')
         ax1.grid()
     except NameError:
@@ -174,7 +174,7 @@ if not fixedTemperature and fixedCurrent:
 
     # Annotate End point
     # ax.annotate("End", xy=(T[-1], V[-1]), xycoords='data', color="red")
-    ax.set(xlabel='°K', ylabel='V', title="Voltage vs Temperature", yscale='log')
+    ax.set(xlabel='°K', ylabel='V', title="Voltage vs Temperature at J={J[0]:.3e}{unit_current}/cm2", yscale='log')
     ax.grid()
 
     # Plot RHO vs T
@@ -184,7 +184,22 @@ if not fixedTemperature and fixedCurrent:
 
     # Annotate End point
     # ax1.annotate("End", xy=(T[-1], RHO[-1]), xycoords='data', color="red")
-    ax1.set(xlabel='°K', ylabel='Ohm cm', title="Resistivity vs Temperature", yscale='log')
+    ax1.set(xlabel='°K', ylabel='Ohm cm', title="Resistivity vs Temperature at J={J[0]:.3e}{unit_current}/cm2", yscale='log')
     ax1.grid()
+
+if fixedTemperature and fixedCurrent:
+    fig, [ax1, ax2] = plt.subplots(2,1)
+    ax1.set_title(f"Electrical field and Resistivity vs time at J={J[0]:.3e}{unit_current}/cm2 and T={np.average(T):.0f}")
+    ax1.set_xlabel('time')
+    ax1.set_ylabel('Ohm cm', color='red')
+    ax1.tick_params(axis='y', labelcolor='r')
+    ax1.plot(DT, RHO, color='red', label='RHO')
+    # ax2 = ax1.twinx()
+    ax2.set_ylabel('V/cm')
+    ax2.plot(DT, E, label='E')
+    # ax1.legend(loc='upper right')
+    # ax2.legend(loc='upper left')
+    ax1.grid(True)
+    ax2.grid(True)
 
 plt.show()
