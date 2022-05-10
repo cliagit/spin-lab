@@ -2,7 +2,7 @@
 
 '''
  Electrical characteristic experiment with current source.
- Keithely Source meter as fixed or variable current generator and
+ Keithely 2400 Source meter as current generator and
  Nano Voltmeter as voltage reader on channel 1
  Keithely multimeter 2000 or 2700 to measure temperature with silicon diode DT470
 '''
@@ -134,58 +134,58 @@ except gpib.GpibError as e:
 
 ### Configurazione del SourceMeter Keithley 2400
 # Port GPIB 0, GPIB Intrument address 24
-#try:
-#    sm=Gpib.Gpib(0,24)
-#    # Reset GPIB defaults
-#    sm.write("*RST")
-#    # Identify request
-#    sm.write("*IDN?")
-#    # Read answer from device
-#    logging.info('Found Source Meter %s', sm.read().decode("utf-8"))
-#    # print(sm.read().decode('utf-8'))
-#### Select source function, mode '''
-#    #Select current source.
-#    sm.write(":SOUR:FUNC CURR")
-#    # Select source range.
-#    #sm.write(":SOUR:CURR:RANG 10E-3")
-#    # Source output.
-#    sm.write(f":SOUR:CURR:LEV {SOURCE_I[0]}")
-#    # Voltage compliance.
-#    sm.write(f':SENS:VOLT:PROT {conf["LIMIT"]}')
-#    # Voltage measure function.
-#    sm.write(":SENS:FUNC 'VOLT'")
-#    # Voltage reading only.
-#    sm.write(":FORM:ELEM VOLT")
-#    # Turn on source meter output
-#    sm.write(":OUTP ON")
-#except gpib.GpibError as e:
-#    logging.fatal("Source meter 2400 doesn't respond: %s", e)
-#    print("Source meter doesn't respond, check it out!", e)
-#    sys.exit(-1)
-
-### Configurazione del SourceMeter Keithley 6221
-# Port GPIB 0, GPIB Intrument address 24
 try:
     sm=Gpib.Gpib(0,24)
     # Reset GPIB defaults
     sm.write("*RST")
     # Identify request
     sm.write("*IDN?")
-    # Read answer
+    # Read answer from device
     logging.info('Found Source Meter %s', sm.read().decode("utf-8"))
-    sm.write(":CLE")
+    # print(sm.read().decode('utf-8'))
+### Select source function, mode '''
+    #Select current source.
+    sm.write(":SOUR:FUNC CURR")
     # Select source range.
-    sm.write(":SOUR:CURR:RANG:AUTO ON")
+    #sm.write(":SOUR:CURR:RANG 10E-3")
     # Source output.
-    sm.write(f":SOUR:CURR {SOURCE_I[0]}")
-    # Compliance.voltage limit
-    sm.write(f':SOUR:CURR:COMP {conf["LIMIT"]}')
-    # Turn on output
+    sm.write(f":SOUR:CURR:LEV {SOURCE_I[0]}")
+    # Voltage compliance.
+    sm.write(f':SENS:VOLT:PROT {conf["LIMIT"]}')
+    # Voltage measure function.
+    sm.write(":SENS:FUNC 'VOLT'")
+    # Voltage reading only.
+    sm.write(":FORM:ELEM VOLT")
+    # Turn on source meter output
     sm.write(":OUTP ON")
 except gpib.GpibError as e:
-    logging.fatal("Source meter 6221 doesn't respond: %s", e)
-    print("Source meter 6221 doesn't respond, check it out!", e)
+    logging.fatal("Source meter 2400 doesn't respond: %s", e)
+    print("Source meter doesn't respond, check it out!", e)
     sys.exit(-1)
+
+### Configurazione del SourceMeter Keithley 6221
+# Port GPIB 0, GPIB Intrument address 24
+#try:
+#    sm=Gpib.Gpib(0,24)
+#    # Reset GPIB defaults
+#    sm.write("*RST")
+#    # Identify request
+#    sm.write("*IDN?")
+#    # Read answer
+#    logging.info('Found Source Meter %s', sm.read().decode("utf-8"))
+#    sm.write(":CLE")
+#    # Select source range.
+#    sm.write(":SOUR:CURR:RANG:AUTO ON")
+#    # Source output.
+#    sm.write(f":SOUR:CURR {SOURCE_I[0]}")
+#    # Compliance.voltage limit
+#    sm.write(f':SOUR:CURR:COMP {conf["LIMIT"]}')
+#    # Turn on output
+#    sm.write(":OUTP ON")
+#except gpib.GpibError as e:
+#    logging.fatal("Source meter 6221 doesn't respond: %s", e)
+#    print("Source meter 6221 doesn't respond, check it out!", e)
+#    sys.exit(-1)
 
 # Instantiate threading event handler
 # Evento uscita dal ciclo di misura
@@ -259,22 +259,6 @@ to stop and save the measurements close the plot window')
             if not answer == 'Yes, go on':
                 break
 
-        ### Per ovviare agli spegnimenti del 2400 ###
-        #Select current source.
-#        sm.write(":SOUR:FUNC CURR")
-#        # Select source range.
-#        #sm.write(":SOUR:CURR:RANG 10E-3")
-#        # Source output.
-#        sm.write(f":SOUR:CURR:LEV {SOURCE_I[0]}")
-#        # Voltage compliance.
-#        sm.write(f':SENS:VOLT:PROT {conf["LIMIT"]}')
-#        # Voltage measure function.
-#        sm.write(":SENS:FUNC 'VOLT'")
-#        # Voltage reading only.
-#        sm.write(":FORM:ELEM VOLT")
-#        # Turn on source meter output
-#        sm.write(":OUTP ON")
-
         start_measurements = True
         # nvolt_measure_prev = -1000.0
         # Ciclo della corrente
@@ -308,13 +292,6 @@ to stop and save the measurements close the plot window')
                     multimeter.write(':READ?')
                     temp_measure = dt400.voltage_to_temp(float(multimeter.read()))
                     temp_sum += temp_measure
-#                   if abs(nvolt_measure - nvolt_measure_prev) > 1.0 and not nvolt_measure_prev < 0:
-#                        logging.warning("Voltage reading differ > 1V: current value is %sV \
-#previous %sV temperature %s°K current %sA", nvolt_measure, nvolt_measure_prev, temp_measure, i)
-                        # print(f"\nVoltage reading differ > 1V, current value is \
-#{nvolt_measure:.4f}V previous {nvolt_measure_prev:.4f}V temperature \
-#{temp_measure:.2f}°K current {i:.4e}A\n")
-                    #nvolt_measure_prev = nvolt_measure
                     sleep(DELAY)
                     error = False
                 except ValueError:
@@ -334,17 +311,6 @@ to stop and save the measurements close the plot window')
                 e_field = volt/LENGTH
                 c_density = i/AREA
                 rho = e_field/c_density
-            #            try:
-            #                # Lettura del voltaggio misurato al Source Meter 2400
-            #                sm.write(':READ?')
-            #                voltSm = float(sm.read())
-            #                lim = float(conf["LIMIT"])
-            #                # print(f'T:{temp:.2f}°K V:{volt:.3f} V R:{res:.3f} 𝛀
-            #                        Voltage limit: {(voltSm*100)/lim:.2f}%', end="\r")
-            #            except:
-            #                # print(f'T:{temp:.2f}°K V:{volt:.3f} V R:{res:.3f} 𝛀                ',
-            #                         end="\r")
-            #                # print("\nSource meter reading error!\n")
                 log_measure = f'T:{temp:.2f}°K V:{volt:.4e}V I:{i:.4e}A R:{res:.4e}𝛀 \
 E:{e_field:.4e}V/cm J:{c_density:.4e}A/cm2 𝛒:{rho:.4e}𝛀 cm'
                 # print(f'T:{temp:.2f}°K V:{volt:.4e}V I:{i:.4e}A R:{res:.4e}𝛀 \
@@ -454,8 +420,8 @@ def on_close(event):
         path_file = path + "/" + title.replace(" ", "_") + "-" + date_time
         try:
             # Creazione, se non esistente, della cartella base col nome del campione
-            if not os.path.exists(SAMPLE_NAME):
-                os.mkdir(SAMPLE_NAME)
+            if not os.path.exists("Esperimenti/" + SAMPLE_NAME):
+                os.mkdir("Esperimenti/" + SAMPLE_NAME)
             # Creazione, se non esistente, della cartella dell'esperimento
             if not os.path.exists(path):
                 os.mkdir(path)
@@ -504,8 +470,8 @@ duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
         # Salvataggio dati formato csv
         csv_path = path_file + ".csv"
         logging.info("Save data in CSV format %s", csv_path)
-        data = pd.DataFrame(np.stack((T, V, R, I, E, RHO, J), axis=-1),
-               columns=['Temperature [K]', 'Voltage [V]', 'Resistance [𝛀]', 'Current Source [A]', \
+        data = pd.DataFrame(np.stack((DT, T, V, R, I, E, RHO, J), axis=-1),
+columns=['Datetime', 'Temperature [K]', 'Voltage [V]', 'Resistance [𝛀]', 'Current Source [A]', \
 'Electric Field [V/cm]', 'Restivity [𝛀 cm]', 'Current Density [A/cm2]'])
         data.to_csv(csv_path, index=False)
 

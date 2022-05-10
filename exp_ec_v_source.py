@@ -370,8 +370,8 @@ def on_close(event):
         path_file = path + "/" + title.replace(" ", "_") + "-" + date_time
         try:
             # Creazione, se non esistente, della cartella base col nome del campione
-            if not os.path.exists(SAMPLE_NAME):
-                os.mkdir(SAMPLE_NAME)
+            if not os.path.exists("Esperimenti/" + SAMPLE_NAME):
+                os.mkdir("Esperimenti/" + SAMPLE_NAME)
             # Creazione, se non esistente, della cartella dell'esperimento
             if not os.path.exists(path):
                 os.mkdir(path)
@@ -420,8 +420,8 @@ duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
         # Salvataggio dati formato csv
         csv_path = path_file + ".csv"
         logging.info("Save data in CSV format %s", csv_path)
-        data = pd.DataFrame(np.stack((T, V, R, I, E, RHO, J), axis=-1),
-               columns=['Temperature [K]', 'Voltage source [V]', 'Resistance [𝛀]', 'Current [A]', \
+        data = pd.DataFrame(np.stack((DT,T, V, R, I, E, RHO, J), axis=-1),
+columns=['Datetime', 'Temperature [K]', 'Voltage source [V]', 'Resistance [𝛀]', 'Current [A]', \
 'Electric Field [V/cm]', 'Restivity [𝛀 cm]', 'Current Density [A/cm2]'])
         data.to_csv(csv_path, index=False)
 
