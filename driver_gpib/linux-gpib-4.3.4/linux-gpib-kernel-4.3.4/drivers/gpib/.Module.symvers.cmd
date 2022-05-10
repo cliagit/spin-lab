@@ -1,1 +1,0 @@
-cmd_/home/spin/driver_gpib/linux-gpib-4.3.4/linux-gpib-kernel-4.3.4/drivers/gpib/Module.symvers := sed 's/ko$$/o/' /home/spin/driver_gpib/linux-gpib-4.3.4/linux-gpib-kernel-4.3.4/drivers/gpib/modules.order | scripts/mod/modpost -m    -o /home/spin/driver_gpib/linux-gpib-4.3.4/linux-gpib-kernel-4.3.4/drivers/gpib/Module.symvers -e -i Module.symvers   -T -
