@@ -91,47 +91,47 @@ fixedCurrent = np.max(I) == np.min(I)
 #        ax2.grid()
 #        ax2.legend(title="J ("+ unit_current +"/cm2)")
 
-    ## Grafici 3D
-    mappable = plt.cm.ScalarMappable(cmap=cm.turbo)
-    mappable.set_array(T)
+## Grafici 3D
+mappable = plt.cm.ScalarMappable(cmap=cm.turbo)
+mappable.set_array(T)
 
-    fig3d_a = plt.figure()
-    ax3d_a = plt.axes(projection='3d')
-    fig3d_a.colorbar(mappable)
+fig3d_a = plt.figure()
+ax3d_a = plt.axes(projection='3d')
+fig3d_a.colorbar(mappable)
 
-    fig3d_b = plt.figure()
-    ax3d_b = plt.axes(projection='3d')
-    fig3d_b.colorbar(mappable)
+fig3d_b = plt.figure()
+ax3d_b = plt.axes(projection='3d')
+fig3d_b.colorbar(mappable)
 
-    fig3d_c = plt.figure()
-    ax3d_c = plt.axes(projection='3d')
-    fig3d_c.colorbar(mappable)
-    try:
-        ax3d_a.set(title="V vs I and Temperature", xlabel=unit_current, ylabel='V', zlabel='(°K)')
-        ax3d_a.scatter(I, V, T, cmap=mappable.cmap, norm=mappable.norm, c=mappable.get_array())
-        # Individuazione dei massimi e dei minimi
-        v_min = np.argmin(V)
-        v_max = np.argmax(V)
-        ax3d_a.text(I[v_max], V[v_max], T[v_max], f"{V[v_max]:.2e}V", color='red')
-        ax3d_a.text(I[v_min], V[v_min], T[v_min], f"{V[v_min]:.2e}V", color='orange')
-        ax3d_b.set(title='E vs J and Temperature', xlabel=unit_current+'/cm2', ylabel='V cm', zlabel='(°K)')
-        ax3d_b.scatter(J, E, T, cmap=mappable.cmap, norm=mappable.norm, c=mappable.get_array())
+fig3d_c = plt.figure()
+ax3d_c = plt.axes(projection='3d')
+fig3d_c.colorbar(mappable)
+try:
+    ax3d_a.set(title="V vs I and Temperature", xlabel=unit_current, ylabel='V', zlabel='(°K)')
+    ax3d_a.scatter(I, V, T, cmap=mappable.cmap, norm=mappable.norm, c=mappable.get_array())
+    # Individuazione dei massimi e dei minimi
+    v_min = np.argmin(V)
+    v_max = np.argmax(V)
+    ax3d_a.text(I[v_max], V[v_max], T[v_max], f"{V[v_max]:.2e}V", color='red')
+    ax3d_a.text(I[v_min], V[v_min], T[v_min], f"{V[v_min]:.2e}V", color='orange')
+    ax3d_b.set(title='E vs J and Temperature', xlabel=unit_current+'/cm2', ylabel='V cm', zlabel='(°K)')
+    ax3d_b.scatter(J, E, T, cmap=mappable.cmap, norm=mappable.norm, c=mappable.get_array())
 
-        # Individuazione dei massimi e dei minimi
-        e_min = np.argmin(E)
-        e_max = np.argmax(E)
-        ax3d_b.text(J[e_max], E[e_max], T[e_max], f"{E[e_max]:.2e}V/cm", color='red')
-        ax3d_b.text(J[e_min], E[e_min], T[e_min], f"{E[e_min]:.2e}V/cm", color='orange')
+    # Individuazione dei massimi e dei minimi
+    e_min = np.argmin(E)
+    e_max = np.argmax(E)
+    ax3d_b.text(J[e_max], E[e_max], T[e_max], f"{E[e_max]:.2e}V/cm", color='red')
+    ax3d_b.text(J[e_min], E[e_min], T[e_min], f"{E[e_min]:.2e}V/cm", color='orange')
 
-        ax3d_c.set(title='Rho vs J and Temperature', xlabel=unit_current +'/cm2', ylabel='Ohm cm', zlabel='(°K)')
-        ax3d_c.scatter(J, RHO, T, cmap=mappable.cmap, norm=mappable.norm, c=mappable.get_array())
-        # Individuazione dei massimi e dei minimi
-        r_min = np.argmin(RHO)
-        r_max = np.argmax(RHO)
-        ax3d_c.text(J[r_max], RHO[r_max], T[r_max], f"{RHO[r_max]:.2e}Ohm/cm", color='red')
-        ax3d_c.text(J[r_min], RHO[r_min], T[r_min], f"{RHO[r_min]:.2e}Ohm/cm", color='orange')
-    except NameError:
-        pass
+    ax3d_c.set(title='Rho vs J and Temperature', xlabel=unit_current +'/cm2', ylabel='Ohm cm', zlabel='(°K)')
+    ax3d_c.scatter(J, RHO, T, cmap=mappable.cmap, norm=mappable.norm, c=mappable.get_array())
+    # Individuazione dei massimi e dei minimi
+    r_min = np.argmin(RHO)
+    r_max = np.argmax(RHO)
+    ax3d_c.text(J[r_max], RHO[r_max], T[r_max], f"{RHO[r_max]:.2e}Ohm/cm", color='red')
+    ax3d_c.text(J[r_min], RHO[r_min], T[r_min], f"{RHO[r_min]:.2e}Ohm/cm", color='orange')
+except NameError:
+    pass
 
 ## Grafici 2D a temperatura fissata
 if fixedTemperature and not fixedCurrent:
