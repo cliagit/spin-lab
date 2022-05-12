@@ -57,38 +57,39 @@ unit_current = "mA"
 fixedTemperature = np.max(T) - np.min(T) < 1
 fixedCurrent = np.max(I) == np.min(I)
 
-if not fixedTemperature and not fixedCurrent:
-    indexes_max = np.where(I == np.max(I))[0]
-    indexes_min = np.where(I == np.min(I))[0]
-    # I grafici 2D sono visualizzati solo se sono individuati correttamente i cicli di corrente
-    if len(indexes_min) == len(indexes_max):
-        ## Grafici 2D
-        fig, [ax, ax1] = plt.subplots(2,1)
-        for i in range(len(indexes_min)):
-            # Plot V vs I
-            ax.plot(I[indexes_min[i]:indexes_max[i]], V[indexes_min[i]:indexes_max[i]], '.',
-label=f'{round(np.average(T[indexes_min[i]:indexes_max[i]]))}')
-            # Plot RHO vs J
-            ax1.plot(J[indexes_min[i]:indexes_max[i]], RHO[indexes_min[i]:indexes_max[i]], '.',
-label=f'{round(np.average(T[indexes_min[i]:indexes_max[i]]))}',)
-     
-        ax.set(xlabel=unit_current, ylabel='V', title="V vs I", yscale='linear')
-        ax.grid()
-        ax.legend(title="Temp (°K)")
+#if not fixedTemperature and not fixedCurrent:
+#    indexes_max = np.where(I == np.max(I))[0]
+#    indexes_min = np.where(I == np.min(I))[0]
+#    print(indexes_max, indexes_min)
+#    # I grafici 2D sono visualizzati solo se sono individuati correttamente i cicli di corrente
+#    if len(indexes_min) == len(indexes_max):
+#        ## Grafici 2D
+#        fig, [ax, ax1] = plt.subplots(2,1)
+#        for i in range(len(indexes_min)):
+#            # Plot V vs I
+#            ax.plot(I[indexes_min[i]:indexes_max[i]], V[indexes_min[i]:indexes_max[i]], '.',
+#label=f'{round(np.average(T[indexes_min[i]:indexes_max[i]]))}')
+#            # Plot RHO vs J
+#            ax1.plot(J[indexes_min[i]:indexes_max[i]], RHO[indexes_min[i]:indexes_max[i]], '.',
+#label=f'{round(np.average(T[indexes_min[i]:indexes_max[i]]))}',)
+#     
+#        ax.set(xlabel=unit_current, ylabel='V', title="V vs I", yscale='linear')
+#        ax.grid()
+#        ax.legend(title="Temp (°K)")
 
-        ax1.set(xlabel=unit_current+'/cm2', ylabel='Ohm cm', title="RHO vs J", yscale='linear', xscale='linear')
-        ax1.grid()
-        ax1.legend(title="Temp (°K)")
+#        ax1.set(xlabel=unit_current+'/cm2', ylabel='Ohm cm', title="RHO vs J", yscale='linear', xscale='linear')
+#        ax1.grid()
+#        ax1.legend(title="Temp (°K)")
 
-        fig, ax2 = plt.subplots()
-        for j in range(0, indexes_max[0]+1, 10):
-           # print(indexes_min + j, I[indexes_min + j])
-            ax2.plot(T[indexes_min + j], RHO[indexes_min + j], '.-',
-    label=f'{J[indexes_min + j][0]:.2f}',)
+#        fig, ax2 = plt.subplots()
+#        for j in range(0, indexes_max[0]+1, 10):
+#           # print(indexes_min + j, I[indexes_min + j])
+#            ax2.plot(T[indexes_min + j], RHO[indexes_min + j], '.-',
+#    label=f'{J[indexes_min + j][0]:.2f}',)
 
-        ax2.set(xlabel='°K', ylabel='Ohm cm', title="RHO vs T", yscale='linear', xscale='linear')
-        ax2.grid()
-        ax2.legend(title="J ("+ unit_current +"/cm2)")
+#        ax2.set(xlabel='°K', ylabel='Ohm cm', title="RHO vs T", yscale='linear', xscale='linear')
+#        ax2.grid()
+#        ax2.legend(title="J ("+ unit_current +"/cm2)")
 
     ## Grafici 3D
     mappable = plt.cm.ScalarMappable(cmap=cm.turbo)
