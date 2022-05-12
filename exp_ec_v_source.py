@@ -397,7 +397,7 @@ def on_close(event):
                 file.write(f'\nDate {DT[0].strftime("%Y-%m-%d")} start at \
 {DT[0].strftime("%H:%M:%S")} end at {DT[-1].strftime("%H:%M:%S")} \
 duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
-                file.write(f'\nTemperature range from {T[0]:.2f}°K to {T[-1]:.2f}°K')
+                file.write(f'\nTemperature range from {np.min(T):.2f}°K to {np.max(T):.2f}°K')
                 file.write('\nResistivity:')
                 file.write(f'\n\t average {np.average(RHO):.4e}𝛀 cm')
                 file.write(f'\n\t minimum {np.min(RHO):.4e}𝛀 cm at {T[np.argmin(R)]:.2f}°K')
