@@ -320,12 +320,12 @@ def on_close(event):
     date_time = datetime.now().strftime("%Y%m%d%H%M%S")
     answer = eg.ynbox('Save data?', 'Closing the experiment', ('Yes', 'No'))
     if answer and len(DT) > 0:
-        path = "Esperimenti/" + SAMPLE_NAME + "/" + title.replace(" ", "_")
+        path = "Esperimenti/" + SAMPLE_NAME + "/TIPS/" + title.replace(" ", "_")
         path_file = path + "/" + title.replace(" ", "_") + "-" + date_time
         try:
             # Creazione, se non esistente, della cartella base col nome del campione
-            if not os.path.exists("Esperimenti/" + SAMPLE_NAME):
-                os.mkdir("Esperimenti/" + SAMPLE_NAME)
+            if not os.path.exists("Esperimenti/" + SAMPLE_NAME + "/TIPS/"):
+                os.mkdir("Esperimenti/" + SAMPLE_NAME+ "/TIPS/")
             # Creazione, se non esistente, della cartella dell'esperimento
             if not os.path.exists(path):
                 os.mkdir(path)
@@ -356,10 +356,6 @@ duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
                 file.write(f'\n\t average {np.average(RHO):.4e}𝛀 cm')
                 file.write(f'\n\t minimum {np.min(RHO):.4e}𝛀 cm')
                 file.write(f'\n\t maximum {np.max(RHO):.4e}𝛀 cm')
-                file.write('\nVoltage:')
-                file.write(f'\n\t average {np.average(V):.4e}V')
-                file.write(f'\n\t minimum {np.min(V):.4e}V')
-                file.write(f'\n\t maximum {np.max(V):.4e}V')
                 file.write('\nResistance:')
                 file.write(f'\n\t average {np.average(R):.4e}𝛀 cm')
                 file.write(f'\n\t minimum {np.min(R):.4e}𝛀 cm')
