@@ -360,6 +360,7 @@ duration {str(DT[-1].replace(microsecond=0)-DT[0].replace(microsecond=0))}')
                 file.write(f'\n\t average {np.average(V):.4e}V')
                 file.write(f'\n\t minimum {np.min(V):.4e}V')
                 file.write(f'\n\t maximum {np.max(V):.4e}V')
+                file.write('\n -------------------------------------------------------\n')
         except OSError as error:
             logging.error("Error handling description file: %s", error)
             # print(error)
