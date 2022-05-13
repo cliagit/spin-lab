@@ -324,8 +324,9 @@ def on_close(event):
         path_file = path + "/" + title.replace(" ", "_") + "-" + date_time
         try:
             # Creazione, se non esistente, della cartella base col nome del campione
-            if not os.path.exists("Esperimenti/" + SAMPLE_NAME + "/TIPS/"):
-                os.mkdir("Esperimenti/" + SAMPLE_NAME+ "/TIPS/")
+            if not os.path.exists("Esperimenti/" + SAMPLE_NAME + "/TIPS"):
+                os.mkdir("Esperimenti/" + SAMPLE_NAME)
+                os.mkdir("Esperimenti/" + SAMPLE_NAME+ "/TIPS")
             # Creazione, se non esistente, della cartella dell'esperimento
             if not os.path.exists(path):
                 os.mkdir(path)
