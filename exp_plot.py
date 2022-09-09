@@ -50,9 +50,9 @@ for file in file_data:
 # answer = eg.choicebox('Select the plot', 'Plot', ["RHO vs Temperature", "RHO vs I"])
 
 # Correnti in mA
-J = J * 1000
-I = I * 1000
-unit_current = "mA"
+# J = J * 1000
+# I = I * 1000
+unit_current = "A"
 
 fixedTemperature = np.max(T) - np.min(T) < 1
 fixedCurrent = np.max(I) == np.min(I)
