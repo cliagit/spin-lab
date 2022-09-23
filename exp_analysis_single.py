@@ -6,7 +6,8 @@
 # In[1]:
 
 
-paths = ['/home/spin/Esperimenti/Analisi/CA8_01_A/CA8_01_A_current_from_-1e-6_to_1e-6A_flipped/CA8_01_A_current_from_-1e-6_to_1e-6A_flipped-20220421111258',
+paths = ['/home/spin/Esperimenti/CA8_01_A/CA8_01_A_square_waveform_value_3.5e-08A/CA8_01_A_square_waveform_value_3.5e-08A-20220422142852',
+'/home/spin/Esperimenti/Analisi/CA8_01_A/CA8_01_A_current_from_-1e-6_to_1e-6A_flipped/CA8_01_A_current_from_-1e-6_to_1e-6A_flipped-20220421111258',
 '/home/spin/Esperimenti/Analisi/CA8_01_A/CA8_01_A_current_from_0.5e-7_to_4e-7A/CA8_01_A_current_from_0.5e-7_to_4e-7A-20220421185114',
 '/home/spin/Esperimenti/Analisi/CA8_01_A/CA8_01_A_current_from_0.5e-6_to_2e-6A_flipped/CA8_01_A_current_from_0.5e-6_to_2e-6A_flipped-20220421110256',
 '/home/spin/Esperimenti/Analisi/CA12X2/CA12X2_current_from_1e-9_to_10e-9A/CA12X2_current_from_1e-9_to_10e-9A-20220315151857',
@@ -84,16 +85,14 @@ print(f"Area {area[0]:.4e}cm2\nThickness:{thickness[0]:.4e}cm")
 
 
 
-
 # ### Input source
 plt.plot(E)
-plt.show()
+#plt.show()
 
 # Se non costante analisi della sola prima rampa
-if I[0] != I[-1] or 'flipped' in data_path:   
+if 'current_from' in data_path or 'flipped' in data_path:
     max_index = np.argmax(I)
-    print(max_index)
-
+#    print(max_index)
     DT = DT[0:max_index]
     V = V[0:max_index]
     R = R[0:max_index]
@@ -103,9 +102,18 @@ if I[0] != I[-1] or 'flipped' in data_path:
     E = E[0:max_index]
     RHO = RHO[0:max_index]
 
+elif 'square' in data_path:
+    print("square")
+    V = abs(V)
+    R = abs(R)
+    I = abs(I)
+    J = abs(J)
+    E = abs(E)
+    RHO = abs(RHO)
+
 #plt.plot(I)
-#plt.plot(E)
-#plt.show()
+plt.plot(E)
+plt.show()
 # ### Temperature
 
 diff = np.max(T) - np.min(T)

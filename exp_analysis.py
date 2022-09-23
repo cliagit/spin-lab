@@ -21,6 +21,7 @@ DIR_ANALISI = "/Analisi"
 
 experiment_base_dir = ''
 names = []
+experiment_names = []
 # Temperatura
 minT = []
 avgT = []
@@ -29,16 +30,21 @@ maxT = []
 minJ = []
 avgJ = []
 maxJ = []
+# Restitività
+minRho = []
+avgRho = []
+maxRho = []
+
 # Ampiezza delle oscillazioni del campo elettrico
-min_osc_amp = []
-avg_osc_amp = []
-max_osc_amp = []
-# Periodo delle oscillazioni
-min_osc_width = []
-avg_osc_width = []
-max_osc_width = []
+min_osc_amp_e = []
+avg_osc_amp_e = []
+max_osc_amp_e = []
+# Periodo delle oscillazioni del campo elettrico
+min_osc_width_e = []
+avg_osc_width_e = []
+max_osc_width_e = []
 
-
+fixed_source = []
 def oscillations_analysis(experiment_name, experiment_data):
     '''
     Ricerca e Analisi delle oscillazioni.
@@ -61,7 +67,7 @@ def oscillations_analysis(experiment_name, experiment_data):
 #            J = J * 1000
 #            I = I * 1000
         # Se non costante analisi della sola prima rampa
-        if I[0] != I[-1] or 'flipped' in experiment_name:
+        if 'current_from' in experiment_name or 'flipped' in experiment_name:
             max_index = np.argmax(I)
             DT = DT[0:max_index]
             V = V[0:max_index]
@@ -71,7 +77,13 @@ def oscillations_analysis(experiment_name, experiment_data):
             J = J[0:max_index]
             E = E[0:max_index]
             RHO = RHO[0:max_index]
-
+        elif 'square' in experiment_name:
+            V = abs(V)
+            R = abs(R)
+            I = abs(I)
+            J = abs(J)
+            E = abs(E)
+            RHO = abs(RHO)
         # ## Analysis
         # ### Peaks detection
         # Individuazione dei picchi
@@ -210,30 +222,40 @@ def oscillations_analysis(experiment_name, experiment_data):
         # ### Input source
         if I[0] == I[-1]:
             description += f"Source is constant: {I[0]:.3e}{CURRENT_UNIT} ({J[0]:.3e}{CURRENT_UNIT}/cm2)\n\n"
+            fixed_source.append(True)
         else:
             description += f"Source span from {np.min(I):.3e}{CURRENT_UNIT} ({np.min(J):.3e}{CURRENT_UNIT}/cm2) to {np.max(I):.3e}{CURRENT_UNIT} ({np.max(J):.3e}{CURRENT_UNIT}/cm2)\n\n"
+            fixed_source.append(False)
 
         minJ.append(np.min(J))
         avgJ.append(np.average(J))
         maxJ.append(np.max(J))
+        
+        # Resistività durante la fase oscillatoria
+        RHO = RHO[istart:iend]
+        minRho.append(np.min(RHO))
+        avgRho.append(np.average(RHO))
+        maxRho.append(np.max(RHO))
+
         
         # #### Oscillations amplitude
         diff = E[peaks]-values
         description += f"Minimum amplitude {np.min(diff):.1f} V/cm at {J[np.argmin(diff)]:.2e} {CURRENT_UNIT}/cm2\nMaximum amplitude {np.max(diff):.1f} at V/cm at {J[np.argmax(diff)]:.2e} {CURRENT_UNIT}/cm2\nAverage amplitude {np.mean(diff):.1f} V/cm\n\n"
 
         # Ampiezza delle oscillazioni del campo elettrico
-        min_osc_amp.append(np.min(diff))
-        avg_osc_amp.append(np.average(diff))
-        max_osc_amp.append(np.max(diff))
+        min_osc_amp_e.append(np.min(diff))
+        avg_osc_amp_e.append(np.average(diff))
+        max_osc_amp_e.append(np.max(diff))
 
         # Periodo delle oscillazioni
         description += f"Time interval between peaks:\nMinimum {np.min(diff_filtered)}\nAverage {np.mean(diff_filtered)}\nMaximum {np.max(diff_filtered)}\n"
-        min_osc_width.append(np.min(diff_filtered.astype(int)))
-        avg_osc_width.append(np.average(diff_filtered.astype(int)))
-        max_osc_width.append(np.max(diff_filtered.astype(int)))
+        min_osc_width_e.append(np.min(diff_filtered.astype(int)))
+        avg_osc_width_e.append(np.average(diff_filtered.astype(int)))
+        max_osc_width_e.append(np.max(diff_filtered.astype(int)))
 
         names.append(experiment_base_dir)
-
+        experiment_names.append(experiment_name)
+        
         # Salvataggio della descrizione
         with open(analisi_path + '/' + experiment_name, "w", encoding='utf-8') as file_desc:
             file_desc.write(description)
@@ -258,34 +280,40 @@ for root, dirs, files in os.walk(DIR_ESPERIMENTI):
 #                E = data['electric_field']
 #                peaks, _ = signal.find_peaks(E, prominence=50)
                 exp_name = file.replace('.npz','')
-                if not 'square' in exp_name:
-                    split_path = data_file.split('/')
-                    #exp_data_dir = '/'.join(split_path[0:-1])
-                    experiment_base_dir = split_path[4]
-                    print(exp_name)
-                    oscillations_analysis(exp_name, data)
+                #if not 'square' in exp_name:
+                split_path = data_file.split('/')
+                #exp_data_dir = '/'.join(split_path[0:-1])
+                experiment_base_dir = split_path[4]
+                print(exp_name)
+                oscillations_analysis(exp_name, data)
             except KeyError:
                 pass
 
 save_path = DIR_ESPERIMENTI + DIR_ANALISI + '/oscillations_analysis'
 # Salvataggio dati nel formato numpy
-np.savez_compressed(save_path, name=names, 
+np.savez_compressed(save_path, name=names, experiment=experiment_names, 
 minT=minT, avgT=avgT, maxT=maxT,
 minJ=minJ, avgJ=avgJ, maxJ=maxJ, 
-min_osc_amp=min_osc_amp, avg_osc_amp=avg_osc_amp, max_osc_amp=max_osc_amp, 
-min_osc_width=min_osc_width, avg_osc_width=avg_osc_width, max_osc_width=max_osc_width)
+minRho=minRho, avgRho=avgRho, maxRho=maxRho,
+min_osc_amp_e=min_osc_amp_e, avg_osc_amp_e=avg_osc_amp_e, max_osc_amp_e=max_osc_amp_e, 
+min_osc_width_e=min_osc_width_e, avg_osc_width_e=avg_osc_width_e, max_osc_width_e=max_osc_width_e,
+fixed_source=fixed_source)
 
 # Salvataggio dati formato csv
-data = pd.DataFrame(np.stack((names, 
+data = pd.DataFrame(np.stack((names, experiment_names,
 minT, avgT, maxT,
 minJ, avgJ, maxJ, 
-min_osc_amp, avg_osc_amp, max_osc_amp, 
-min_osc_width, avg_osc_width, max_osc_width), axis=-1),
-columns=['Name',
+minRho, avgRho, maxRho,
+min_osc_amp_e, avg_osc_amp_e, max_osc_amp_e, 
+min_osc_width_e, avg_osc_width_e, max_osc_width_e,
+fixed_source), axis=-1),
+columns=['Name', 'Experiment',
 'Min Temperature [K]', 'Avg Temperature [K]', 'Max Temperature [K]', \
 'Min Current [A/cm2]', 'Avg Current [A/cm2]', 'Max Current [A/cm2]', \
+'Min Restivity [𝛀 cm]', 'Avg Restivity [𝛀 cm]', 'Max Restivity [𝛀 cm]', \
 'Min Osc Amplitude [V/cm]', 'Avg Osc Amplitude [V/cm]', 'Max Osc Amplitude [V/cm]', \
-'Min Osc Period [ms]', 'Avg Osc Period [ms]', 'Max Osc Period [ms]'])
+'Min Osc Period [ms]', 'Avg Osc Period [ms]', 'Max Osc Period [ms]', \
+'Fixed Source'])
 data.to_csv(save_path + '.csv', index=False)
 
 
