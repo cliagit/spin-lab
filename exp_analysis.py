@@ -34,6 +34,10 @@ maxJ = []
 minRho = []
 avgRho = []
 maxRho = []
+# Campo elettrico
+minE = []
+avgE = []
+maxE = []
 
 # Ampiezza delle oscillazioni del campo elettrico
 min_osc_amp_e = []
@@ -109,10 +113,10 @@ def oscillations_analysis(experiment_name, experiment_data):
 
         # Larghezza, Ampiezza base, inizio e fine dei picchi
         widths, values, start, end = signal.peak_widths(E, peaks, rel_height=1)
-        indexes_start = np.rint(start)
-        indexes_end = np.rint(end)
-        istart = int(min(indexes_start))
-        iend = int(max(indexes_end))
+#        indexes_start = np.rint(start)
+#        indexes_end = np.rint(end)
+        istart = peaks[0] #int(min(indexes_start))
+        iend = peaks[-1] + 1#int(max(indexes_end))
         
         # Grafico completo
         fig, ax1 = plt.subplots()
@@ -236,6 +240,12 @@ def oscillations_analysis(experiment_name, experiment_data):
         minRho.append(np.min(RHO))
         avgRho.append(np.average(RHO))
         maxRho.append(np.max(RHO))
+        
+        # Campo elettrico durante la fase oscillatoria
+        E_osc = E[istart:iend]
+        minE.append(np.min(E_osc))
+        avgE.append(np.average(E_osc))
+        maxE.append(np.max(E_osc))
 
         
         # #### Oscillations amplitude
@@ -255,6 +265,9 @@ def oscillations_analysis(experiment_name, experiment_data):
 
         names.append(experiment_base_dir)
         experiment_names.append(experiment_name)
+        
+        # Inserire parte in cui non sono presenti le oscillazioni
+        
         
         # Salvataggio della descrizione
         with open(analisi_path + '/' + experiment_name, "w", encoding='utf-8') as file_desc:
@@ -295,6 +308,7 @@ np.savez_compressed(save_path, name=names, experiment=experiment_names,
 minT=minT, avgT=avgT, maxT=maxT,
 minJ=minJ, avgJ=avgJ, maxJ=maxJ, 
 minRho=minRho, avgRho=avgRho, maxRho=maxRho,
+minE=minE, avgE=avgE, maxE=maxE,
 min_osc_amp_e=min_osc_amp_e, avg_osc_amp_e=avg_osc_amp_e, max_osc_amp_e=max_osc_amp_e, 
 min_osc_width_e=min_osc_width_e, avg_osc_width_e=avg_osc_width_e, max_osc_width_e=max_osc_width_e,
 fixed_source=fixed_source)
@@ -304,6 +318,7 @@ data = pd.DataFrame(np.stack((names, experiment_names,
 minT, avgT, maxT,
 minJ, avgJ, maxJ, 
 minRho, avgRho, maxRho,
+minE, avgE, maxE,
 min_osc_amp_e, avg_osc_amp_e, max_osc_amp_e, 
 min_osc_width_e, avg_osc_width_e, max_osc_width_e,
 fixed_source), axis=-1),
@@ -311,6 +326,7 @@ columns=['Name', 'Experiment',
 'Min Temperature [K]', 'Avg Temperature [K]', 'Max Temperature [K]', \
 'Min Current [A/cm2]', 'Avg Current [A/cm2]', 'Max Current [A/cm2]', \
 'Min Restivity [𝛀 cm]', 'Avg Restivity [𝛀 cm]', 'Max Restivity [𝛀 cm]', \
+'Min Electrical Field [V/cm]', 'Avg Electrical Field [V/cm]', 'Max Electrical Field [V/cm]', \
 'Min Osc Amplitude [V/cm]', 'Avg Osc Amplitude [V/cm]', 'Max Osc Amplitude [V/cm]', \
 'Min Osc Period [ms]', 'Avg Osc Period [ms]', 'Max Osc Period [ms]', \
 'Fixed Source'])

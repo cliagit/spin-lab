@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+
 # coding: utf-8
 
 # # Electrical characteristic analysis of sample CA12X2
@@ -6,11 +7,12 @@
 # In[1]:
 
 
-paths = ['/home/spin/Esperimenti/CA8_01_A/CA8_01_A_square_waveform_value_3.5e-08A/CA8_01_A_square_waveform_value_3.5e-08A-20220422142852',
-'/home/spin/Esperimenti/Analisi/CA8_01_A/CA8_01_A_current_from_-1e-6_to_1e-6A_flipped/CA8_01_A_current_from_-1e-6_to_1e-6A_flipped-20220421111258',
-'/home/spin/Esperimenti/Analisi/CA8_01_A/CA8_01_A_current_from_0.5e-7_to_4e-7A/CA8_01_A_current_from_0.5e-7_to_4e-7A-20220421185114',
-'/home/spin/Esperimenti/Analisi/CA8_01_A/CA8_01_A_current_from_0.5e-6_to_2e-6A_flipped/CA8_01_A_current_from_0.5e-6_to_2e-6A_flipped-20220421110256',
-'/home/spin/Esperimenti/Analisi/CA12X2/CA12X2_current_from_1e-9_to_10e-9A/CA12X2_current_from_1e-9_to_10e-9A-20220315151857',
+paths = [
+'/home/spin/Esperimenti/CA8_01_A/CA8_01_A_current_from_-1e-6_to_1e-6A_flipped/CA8_01_A_current_from_-1e-6_to_1e-6A_flipped-20220421111258',
+'/home/spin/Esperimenti/CA8_01_A/CA8_01_A_square_waveform_value_3.5e-08A/CA8_01_A_square_waveform_value_3.5e-08A-20220422142852',
+'/home/spin/Esperimenti/CA8_01_A/CA8_01_A_current_from_0.5e-7_to_4e-7A/CA8_01_A_current_from_0.5e-7_to_4e-7A-20220421185114',
+'/home/spin/Esperimenti/CA8_01_A/CA8_01_A_current_from_0.5e-6_to_2e-6A_flipped/CA8_01_A_current_from_0.5e-6_to_2e-6A_flipped-20220421110256',
+'/home/spin/Esperimenti/CA12X2/CA12X2_current_from_1e-9_to_10e-9A/CA12X2_current_from_1e-9_to_10e-9A-20220315151857',
 '/home/spin/Esperimenti/Analisi/CA12X2/CA12X2_current_from_10e-9_to_100e-9A/CA12X2_current_from_10e-9_to_100e-9A-20220315151525',
 '/home/spin/Esperimenti/Analisi/CA12X2/CA12X2_current_from_100e-9_to_200e-9A/CA12X2_current_from_100e-9_to_200e-9A-20220315152213',
 '/home/spin/Esperimenti/Analisi/CA12X2/CA12X2_current_from_200e-9_to_300e-9A/CA12X2_current_from_200e-9_to_300e-9A-20220315152513',
@@ -18,7 +20,7 @@ paths = ['/home/spin/Esperimenti/CA8_01_A/CA8_01_A_square_waveform_value_3.5e-08
 '/home/spin/Esperimenti/Analisi/CA12X2/CA12X2_current_from_0.1e-6_to_1.5e-6A/CA12X2_current_from_0.1e-6_to_1.5e-6A-20220317150657',
 '/home/spin/Esperimenti/Analisi/CA12X2/CA12X2_current_from_0.1e-6_to_1.0e-6A/CA12X2_current_from_0.1e-6_to_1.0e-6A-20220317151236']
 
-data_path = paths[0]
+data_path = paths[4]
 
 with open(data_path, "r", encoding='utf-8') as file_desc:
     text = file_desc.read()
@@ -157,8 +159,8 @@ ax3.legend(loc='upper right')
 ax1.grid(True)
 ax2.grid(True)
 ax3.grid(True)
-fig.savefig('myfig.png')
-
+#fig.savefig('myfig.png')
+plt.show()
 
 # ### Peaks detection
 # Individuazione dei picchi
@@ -168,10 +170,14 @@ if len(peaks) < 6:
     sys.exit(1)
 # Larghezza, Ampiezza base, inizio e fine dei picchi
 widths, values, start, end = signal.peak_widths(E, peaks, rel_height=1)
-indexes_start = np.rint(start)
-indexes_end = np.rint(end)
-istart = int(min(indexes_start))
-iend = int(max(indexes_end))
+#indexes_start = np.rint(start)
+#indexes_end = np.rint(end)
+istart = peaks[0] #int(min(indexes_start))
+iend = peaks[-1] + 1#int(max(indexes_end))
+
+print(J[0:istart])
+print(J[iend:-1])
+print('istart:', istart, 'iend:', iend)
 
 fig, ax1 = plt.subplots()
 ax1.set_xlabel('time')
@@ -197,7 +203,8 @@ ax2.plot(DT[istart:iend], J[istart:iend], 'o-', label='J', color='C2')
 ax1.grid(True)
 ax2.grid(True)
 #ax3.grid(True)
-fig.savefig('myfig1.png')
+#fig.savefig('myfig1.png')
+plt.show()
 '''
 
 # ### Peaks detection
@@ -263,8 +270,8 @@ fig, ax1 = plt.subplots()
 ax1.set_ylabel('ms')
 ax1.bar(peaks[1:], diff.astype(int))
 ax1.grid(True)
-fig.savefig('myfig3.png')
-
+#fig.savefig('myfig3.png')
+plt.show()
 ''' Detection '''
 # IQR
 Q1 = np.percentile(diff, 25,
@@ -294,8 +301,8 @@ fig, ax1 = plt.subplots()
 ax1.set_ylabel('ms')
 ax1.bar(peaks_filtered[1:],diff_filtered.astype(int))
 ax1.grid(True)
-fig.savefig('myfig4.png')
-
+#fig.savefig('myfig4.png')
+plt.show()
 # #### Distance between peaks
 
 # In[13]:
