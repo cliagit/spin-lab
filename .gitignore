@@ -28,6 +28,7 @@
 Scaricati/
 Immagini/
 Musica/
+driver_gpib/
 
 # Byte-compiled / optimized / DLL files
 */__pycache__/
