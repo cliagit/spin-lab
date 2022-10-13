@@ -8,8 +8,8 @@
 
 
 paths = [
-'/home/spin/Esperimenti/CA8_01_A/CA8_01_A_current_from_-1e-6_to_1e-6A_flipped/CA8_01_A_current_from_-1e-6_to_1e-6A_flipped-20220421111258',
-'/home/spin/Esperimenti/CA8_01_A/CA8_01_A_square_waveform_value_3.5e-08A/CA8_01_A_square_waveform_value_3.5e-08A-20220422142852',
+'/home/spin/Esperimenti/CA12X_C5/CA12X_C5_current_from_1e-7_to_10e-7A/CA12X_C5_current_from_1e-7_to_10e-7A-20220412170113',
+'/home/spin/Esperimenti/CA12X_C5/CA12X_C5_at_fixed_current_3.5e-7A/CA12X_C5_at_fixed_current_3.5e-7A-20220413144545',
 '/home/spin/Esperimenti/CA8_01_A/CA8_01_A_current_from_0.5e-7_to_4e-7A/CA8_01_A_current_from_0.5e-7_to_4e-7A-20220421185114',
 '/home/spin/Esperimenti/CA8_01_A/CA8_01_A_current_from_0.5e-6_to_2e-6A_flipped/CA8_01_A_current_from_0.5e-6_to_2e-6A_flipped-20220421110256',
 '/home/spin/Esperimenti/CA12X2/CA12X2_current_from_1e-9_to_10e-9A/CA12X2_current_from_1e-9_to_10e-9A-20220315151857',
@@ -20,7 +20,7 @@ paths = [
 '/home/spin/Esperimenti/Analisi/CA12X2/CA12X2_current_from_0.1e-6_to_1.5e-6A/CA12X2_current_from_0.1e-6_to_1.5e-6A-20220317150657',
 '/home/spin/Esperimenti/Analisi/CA12X2/CA12X2_current_from_0.1e-6_to_1.0e-6A/CA12X2_current_from_0.1e-6_to_1.0e-6A-20220317151236']
 
-data_path = paths[4]
+data_path = paths[1]
 
 with open(data_path, "r", encoding='utf-8') as file_desc:
     text = file_desc.read()
@@ -205,58 +205,59 @@ ax2.grid(True)
 #ax3.grid(True)
 #fig.savefig('myfig1.png')
 plt.show()
-'''
 
-# ### Peaks detection
-# Individuazione dei picchi
-peaks, _ = signal.find_peaks(RHO, prominence=50)
-# Larghezza, Ampiezza base, inizio e fine dei picchi
-widths, values, start, end = signal.peak_widths(RHO, peaks, rel_height=1)
+# #### Peaks amplitude
+diff = E[peaks]-values
+# IQR
+Q1 = np.percentile(diff, 25,
+                   interpolation = 'midpoint')
+ 
+Q3 = np.percentile(diff, 75,
+                   interpolation = 'midpoint')
+IQR = Q3 - Q1
+ 
+#print("Old Shape: ", diff.shape)
+ 
+# Upper bound
+upper = np.where(diff >= (Q3+1.5*IQR))
+# Lower bound
+lower = np.where(diff <= (Q1-1.5*IQR))
+outliers = np.concatenate([upper[0], lower[0]])
+print(f'Outliers {outliers}')
+ 
+''' Removing the Outliers '''
+diff = np.delete(diff, outliers)
+peaks = np.delete(peaks, outliers)
+values = np.delete(values, outliers)
+print("New peaks: ", peaks)
+
+istart = peaks[0] #int(min(indexes_start))
+iend = peaks[-1] + 1#int(max(indexes_end))
+
 
 fig, ax1 = plt.subplots()
 ax1.set_xlabel('time')
-ax1.set_ylabel('Ohm cm', color='b')
+ax1.set_ylabel('V/cm', color='b')
 ax1.tick_params(axis='y', labelcolor='b')
-ax1.plot(DT, RHO, color='b')
-ax1.plot(DT[peaks], RHO[peaks], 'o', c='orange')
+ax1.plot(DT[istart:iend], E[istart:iend], color='b')
+ax1.plot(DT[peaks], E[peaks], 'o', c='orange')
+ax1.vlines(DT[peaks], values, E[peaks], color='red')
 
 ax2 = ax1.twinx()
-ax2.set_ylabel(unit_current+'/cm2')
-ax2.plot(DT, J, 'o-', label='J', color='C2')
-indexes_start = np.rint(start)
-indexes_end = np.rint(end)
-#plt.plot(DT[indexes_end.astype(int)], E[indexes_end.astype(int)], 'x')
-#plt.hlines(values, DT[indexes_start.astype(int)], DT[indexes_end.astype(int)], color="C3")
-#plt.ylabel('V/cm')
+ax2.tick_params(axis='y', labelcolor='C2')
+ax2.set_ylabel(unit_current+'/cm2', color='C2')
+ax2.plot(DT[istart:iend], J[istart:iend], 'o-', label='J', color='C2')
 ax1.grid(True)
 ax2.grid(True)
-fig.savefig('myfig1.png')
-'''
+plt.show()
+
+print(f"Minimum amplitude {np.min(diff):.1f} V/cm at {J[np.argmin(diff)]:.2e} {unit_current}/cm2       \nMaximum amplitude {np.max(diff):.1f} at V/cm at {J[np.argmax(diff)]:.2e} {unit_current}/cm2      \nAverage amplitude {np.mean(diff):.1f} V/cm")
+
 
 # #### Starting and ending point of the peaks
 
-# In[9]:
-
-
 print(f"First peak with value {E[peaks[0]]:.1f} V/cm, {RHO[peaks[0]]:.3e} Ohm cm at {J[peaks[0]]:.2e} {unit_current}/cm2\nLast peak  with value {E[peaks[-1]]:.1f} V/cm, {RHO[peaks[-1]]:.2e} Ohm cm at {J[peaks[-1]]:.2e} {unit_current}/cm2")
 
-
-# #### Peaks amplitude
-
-# In[10]:
-
-#fig, ax1 = plt.subplots()
-#ax1.plot(DT, E)
-#ax1.vlines(DT[peaks], values, E[peaks], color='red')
-#ax1.set_ylabel('V/cm')
-#ax1.grid(True)
-#fig.savefig('myfig2.png')
-
-# In[11]:
-
-
-diff = E[peaks]-values
-print(f"Minimum amplitude {np.min(diff):.1f} V/cm at {J[np.argmin(diff)]:.2e} {unit_current}/cm2       \nMaximum amplitude {np.max(diff):.1f} at V/cm at {J[np.argmax(diff)]:.2e} {unit_current}/cm2      \nAverage amplitude {np.mean(diff):.1f} V/cm")
 
 
 # #### Time interval between peaks [ms]

@@ -113,10 +113,34 @@ def oscillations_analysis(experiment_name, experiment_data):
 
         # Larghezza, Ampiezza base, inizio e fine dei picchi
         widths, values, start, end = signal.peak_widths(E, peaks, rel_height=1)
-#        indexes_start = np.rint(start)
-#        indexes_end = np.rint(end)
-        istart = peaks[0] #int(min(indexes_start))
-        iend = peaks[-1] + 1#int(max(indexes_end))
+
+        # #### Peaks amplitude outliers filter
+        diff = E[peaks]-values
+        # IQR
+        Q1 = np.percentile(diff, 25,
+                           interpolation = 'midpoint')
+         
+        Q3 = np.percentile(diff, 75,
+                           interpolation = 'midpoint')
+        IQR = Q3 - Q1
+         
+        #print("Old Shape: ", diff.shape)
+         
+        # Upper bound
+        upper = np.where(diff >= (Q3+1.5*IQR))
+        # Lower bound
+        lower = np.where(diff <= (Q1-1.5*IQR))
+        outliers = np.concatenate([upper[0], lower[0]])
+        #print(f'Peaks Outliers {outliers}')
+         
+        ''' Removing the Outliers '''
+        diff = np.delete(diff, outliers)
+        peaks = np.delete(peaks, outliers)
+        values = np.delete(values, outliers)
+        #print("New peaks: ", peaks)
+
+        istart = peaks[0] 
+        iend = peaks[-1] + 1
         
         # Grafico completo
         fig, ax1 = plt.subplots()
