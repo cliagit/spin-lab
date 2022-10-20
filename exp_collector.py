@@ -123,9 +123,9 @@ for root, dirs, files in os.walk(DIR_ESPERIMENTI):
 #                        minJ.append(osc_row['Min Current [A/cm2]'].values[0])
 #                        avgJ.append(osc_row['Avg Current [A/cm2]'].values[0])
 #                        maxJ.append(osc_row['Max Current [A/cm2]'].values[0])
-#                        minE.append(osc_row['Min Electrical Field [V/cm]'].values[0])
-#                        avgE.append(osc_row['Avg Electrical Field [V/cm]'].values[0])
-#                        maxE.append(osc_row['Max Electrical Field [V/cm]'].values[0])
+#                        minE.append(osc_row['Min Electric Field [V/cm]'].values[0])
+#                        avgE.append(osc_row['Avg Electric Field [V/cm]'].values[0])
+#                        maxE.append(osc_row['Max Electric Field [V/cm]'].values[0])
 #                        minRho.append(osc_row['Min Restivity [𝛀 cm]'].values[0])
 #                        avgRho.append(osc_row['Avg Restivity [𝛀 cm]'].values[0])
 #                        maxRho.append(osc_row['Max Restivity [𝛀 cm]'].values[0])
@@ -175,7 +175,7 @@ columns=['Name', 'Thickness [cm]', 'Area [cm2]', 'Experiment',
 'Min Temperature [K]', 'Avg Temperature [K]', 'Max Temperature [K]', \
 'Min Current [A/cm2]', 'Avg Current [A/cm2]', 'Max Current [A/cm2]', \
 'Min Restivity [𝛀 cm]', 'Avg Restivity [𝛀 cm]', 'Max Restivity [𝛀 cm]', \
-'Min Electrical Field [V/cm]', 'Avg Electrical Field [V/cm]', 'Max Electrical Field [V/cm]', \
+'Min Electric Field [V/cm]', 'Avg Electric Field [V/cm]', 'Max Electric Field [V/cm]', \
 'Oscillation', 'Oscillation val'])
 data.to_csv(save_path + '.csv', index=False)
 
