@@ -144,7 +144,7 @@ def oscillations_analysis(experiment_name, experiment_data):
         
         # Grafico completo
         fig, ax1 = plt.subplots()
-        ax1.set_title("Electrical field, Resistivity and Current Density")
+        ax1.set_title("Electric field, Resistivity and Current Density")
         ax1.set_xlabel('time')
         ax1.set_ylabel('Ohm cm', color='m')
         ax1.tick_params(axis='y', labelcolor='m')
@@ -350,7 +350,7 @@ columns=['Name', 'Experiment',
 'Min Temperature [K]', 'Avg Temperature [K]', 'Max Temperature [K]', \
 'Min Current [A/cm2]', 'Avg Current [A/cm2]', 'Max Current [A/cm2]', \
 'Min Restivity [𝛀 cm]', 'Avg Restivity [𝛀 cm]', 'Max Restivity [𝛀 cm]', \
-'Min Electrical Field [V/cm]', 'Avg Electrical Field [V/cm]', 'Max Electrical Field [V/cm]', \
+'Min Electric Field [V/cm]', 'Avg Electric Field [V/cm]', 'Max Electric Field [V/cm]', \
 'Min Osc Amplitude [V/cm]', 'Avg Osc Amplitude [V/cm]', 'Max Osc Amplitude [V/cm]', \
 'Min Osc Period [ms]', 'Avg Osc Period [ms]', 'Max Osc Period [ms]', \
 'Fixed Source'])
