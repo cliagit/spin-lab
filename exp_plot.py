@@ -175,7 +175,7 @@ if not fixedTemperature and fixedCurrent:
 
     # Annotate End point
     # ax.annotate("End", xy=(T[-1], V[-1]), xycoords='data', color="red")
-    ax.set(xlabel='°K', ylabel='V', title="Voltage vs Temperature at J={J[0]:.3e}{unit_current}/cm2", yscale='log')
+    ax.set(xlabel='°K', ylabel='V', title=f"Voltage vs Temperature at J={J[0]:.3e}{unit_current}/cm2", yscale='log')
     ax.grid()
 
     # Plot RHO vs T
@@ -185,7 +185,7 @@ if not fixedTemperature and fixedCurrent:
 
     # Annotate End point
     # ax1.annotate("End", xy=(T[-1], RHO[-1]), xycoords='data', color="red")
-    ax1.set(xlabel='°K', ylabel='Ohm cm', title="Resistivity vs Temperature at J={J[0]:.3e}{unit_current}/cm2", yscale='log')
+    ax1.set(xlabel='°K', ylabel='Ohm cm', title=f"Resistivity vs Temperature at J={J[0]:.3e}{unit_current}/cm2", yscale='log')
     ax1.grid()
 
 if fixedTemperature and fixedCurrent:
