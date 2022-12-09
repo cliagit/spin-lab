@@ -1,4 +1,4 @@
 #!/bin/bash
 ssh-agent -s
-ssh-add .ssh/github
+ssh-add /home/spin/.ssh/github
 git push
