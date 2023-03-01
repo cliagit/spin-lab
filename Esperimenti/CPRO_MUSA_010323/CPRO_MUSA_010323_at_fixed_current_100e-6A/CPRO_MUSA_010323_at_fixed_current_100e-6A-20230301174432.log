@@ -132,4 +132,3 @@
 2023-03-01 17:44:34,217 INFO Save data in numpy format Esperimenti/CPRO_MUSA_010323/CPRO_MUSA_010323_at_fixed_current_100e-6A/CPRO_MUSA_010323_at_fixed_current_100e-6A-20230301174432
 2023-03-01 17:44:34,229 INFO Save data in CSV format Esperimenti/CPRO_MUSA_010323/CPRO_MUSA_010323_at_fixed_current_100e-6A/CPRO_MUSA_010323_at_fixed_current_100e-6A-20230301174432.csv
 2023-03-01 17:44:34,261 INFO Save plot as image Esperimenti/CPRO_MUSA_010323/CPRO_MUSA_010323_at_fixed_current_100e-6A/CPRO_MUSA_010323_at_fixed_current_100e-6A-20230301174432.png
-2023-03-01 17:44:38,961 INFO Closing the experiment
