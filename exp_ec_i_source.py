@@ -287,7 +287,7 @@ to stop and save the measurements close the plot window')
                     nanovolt.write(':READ?')
                     nvolt_measure = float(nanovolt.read())
                     volt_sum += nvolt_measure
-                    # sleep(DELAY)
+                    sleep(200/1000)
                     # Read temperature
                     multimeter.write(':READ?')
                     temp_measure = dt400.voltage_to_temp(float(multimeter.read()))
